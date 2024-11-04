@@ -1,0 +1,9 @@
+{
+  "prompts": [
+    {
+      "domain_file": "/ssd1/kevin/projects/llm_plan_bench/data/pddl/blocksworld/domain.pddl",
+      "problem_file": "/ssd1/kevin/projects/llm_plan_bench/data/pddl/blocksworld/p01.pddl",
+      "prompt": "A planning problem is described as domain PDDL file (define (domain blocksworld-4ops)\n  (:requirements :strips)\n(:predicates (clear ?x)\n             (on-table ?x)\n             (arm-empty)\n             (holding ?x)\n             (on ?x ?y))\n\n(:action pickup\n  :parameters (?ob)\n  :precondition (and (clear ?ob) (on-table ?ob) (arm-empty))\n  :effect (and (holding ?ob) (not (clear ?ob)) (not (on-table ?ob)) \n               (not (arm-empty))))\n\n(:action putdown\n  :parameters  (?ob)\n  :precondition (holding ?ob)\n  :effect (and (clear ?ob) (arm-empty) (on-table ?ob) \n               (not (holding ?ob))))\n\n(:action stack\n  :parameters  (?ob ?underob)\n  :precondition (and (clear ?underob) (holding ?ob))\n  :effect (and (arm-empty) (clear ?ob) (on ?ob ?underob)\n               (not (clear ?underob)) (not (holding ?ob))))\n\n(:action unstack\n  :parameters  (?ob ?underob)\n  :precondition (and (on ?ob ?underob) (clear ?ob) (arm-empty))\n  :effect (and (holding ?ob) (clear ?underob)\n               (not (on ?ob ?underob)) (not (clear ?ob)) (not (arm-empty))))) and the task is (define (problem BW-rand-3)\n(:domain blocksworld-4ops)\n(:objects b1 b2 b3 )\n(:init\n(arm-empty)\n(on-table b1)\n(on b2 b3)\n(on b3 b1)\n(clear b2)\n)\n(:goal\n(and\n(on b2 b3)\n(on b3 b1))\n)\n)\nreturn a pddl format plan without any extra text."
+    }
+  ]
+}

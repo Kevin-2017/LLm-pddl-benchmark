@@ -6,7 +6,6 @@
 ;; This is an extended version of the Sailing domain. In this extenstion 
 ;; boats can accelerate/decelerate to move more/less in a single action. This is obtained by adding
 ;; a first order control behind the classical moving actions.
-
 (define (domain sailing_ln)
     (:types boat - object person - object)
     (:predicates 
