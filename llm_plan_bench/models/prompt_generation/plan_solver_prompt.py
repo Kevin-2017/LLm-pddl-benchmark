@@ -85,11 +85,11 @@ class PlanningPromptGenerator(PromptGenerator):
             
             prompt += f"Domain PDDL:\n```\n{self.domain_pddl}\n```\n\n"
             prompt += f"Task PDDL:\n```\n{self.task_pddl}\n```\n\n"
-            prompt += "Reason step by step and return the optimal answer enclosed within $$ markers in json format. The json should include 'reason' explaining your solution and 'plan' containing the PDDL format plan. The plan should only include the sequence of actions.\n\n"
+            prompt += "Reason step by step and return the optimal answer enclosed within $$ markers in json format.Represent all the new line with \n, so the json could be correctly read. The json should include 'reason' explaining your solution and 'plan' containing the PDDL format plan. The plan should only include the sequence of actions.\n\n"
             prompt += "Your response should look exactly like this:\n"
             prompt += "$$\n"
             prompt += "{\n"
-            prompt += '    "reason": "your step by step reasoning here",\n'
+            prompt += '    "reason": "your step by step reasoning here: \n...\n",\n'
             prompt += '    "plan": "(action1)\\n(action2)\\n(action3)..."\n'
             prompt += "}\n"
             prompt += "$$\n"

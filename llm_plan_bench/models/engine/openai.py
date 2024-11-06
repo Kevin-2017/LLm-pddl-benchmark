@@ -13,7 +13,7 @@ from tenacity import (
     wait_random_exponential,
 )
 from typing import List, Union
-
+from icecream import ic 
 from .base import EngineLM, CachedEngine
 from .engine_utils import get_image_type_from_bytes
 # llama 3 and 3.2
@@ -52,15 +52,15 @@ class ChatOpenAI(EngineLM, CachedEngine):
                 print("no openai key provided")
                 # raise ValueError("Please set the OPENAI_API_KEY environment variable if you'd like to use OpenAI models.")
 
-            try:
-                self.client = OpenAI(
-                    api_key=os.getenv("OPENAI_API_KEY")
-                )
-            except:
-                print("use default key, remember to fix it later!!!")
-                self.client = OpenAI(
-                api_key=OPENAI_API_KEY
-                )
+            # try:
+            self.client = OpenAI(
+                api_key=os.getenv("OPENAI_API_KEY")
+            )
+            # except:
+            #     print("use default key, remember to fix it later!!!")
+            #     self.client = OpenAI(
+            #     api_key=OPENAI_API_KEY
+            #     )
         elif base_url and base_url == OLLAMA_BASE_URL:
             self.client = OpenAI(
                 base_url=base_url,
@@ -94,20 +94,25 @@ class ChatOpenAI(EngineLM, CachedEngine):
         if cache_or_none is not None:
             return cache_or_none
 
-        response = self.client.chat.completions.create(
+
+        if "o1" in self.model_string:
+            response = self.client.chat.completions.create(
             model=self.model_string,
             messages=[
-                {"role": "system", "content": sys_prompt_arg},
                 {"role": "user", "content": prompt},
-            ],
-            frequency_penalty=0,
-            presence_penalty=0,
-            stop=None,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
+            ]
         )
-
+        else:
+            response = self.client.chat.completions.create(
+                model=self.model_string,
+                messages=[
+                    {"role": "system", "content": sys_prompt_arg},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p,
+            )
         response = response.choices[0].message.content
         self._save_cache(sys_prompt_arg + prompt, response)
         return response
@@ -149,17 +154,26 @@ class ChatOpenAI(EngineLM, CachedEngine):
         cache_or_none = self._check_cache(cache_key)
         if cache_or_none is not None:
             return cache_or_none
-
-        response = self.client.chat.completions.create(
+        ic(self.model_string)
+        if "o1" in self.model_string:
+            ic("using o1 model")
+            response = self.client.chat.completions.create(
             model=self.model_string,
             messages=[
-                {"role": "system", "content": sys_prompt_arg},
                 {"role": "user", "content": formatted_content},
-            ],
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
+            ]
         )
+        else:
+            response = self.client.chat.completions.create(
+                model=self.model_string,
+                messages=[
+                    {"role": "system", "content": sys_prompt_arg},
+                    {"role": "user", "content": formatted_content},
+                ],
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p,
+            )
 
         response_text = response.choices[0].message.content
         self._save_cache(cache_key, response_text)

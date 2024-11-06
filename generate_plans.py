@@ -10,23 +10,29 @@ import openai
 
 def extract_json_from_response(response: str) -> str:
     """
-    Extract JSON content between $$ markers from the response.
+    Clean and extract JSON content from the response.
     
     Args:
         response (str): Raw response from LLM
         
     Returns:
-        str: JSON string between $$ markers or the original string if no markers found
+        str: Cleaned JSON string
     """
+    # First try to detect if response is already in JSON format
     try:
-        start_idx = response.find("$$\n")
-        end_idx = response.rfind("\n$$")
-        
-        if start_idx != -1 and end_idx != -1:
-            return response[start_idx + 3:end_idx].strip()
+        json.loads(response)
         return response
-    except Exception:
-        return response
+    except json.JSONDecodeError:
+        # If not, try to extract between $$ markers
+        try:
+            start_idx = response.find("$$\n")
+            end_idx = response.rfind("\n$$")
+            
+            if start_idx != -1 and end_idx != -1:
+                return response[start_idx + 3:end_idx].strip()
+            return response
+        except Exception:
+            return response
 
 def extract_plan_from_response(response: str) -> str:
     """
@@ -60,7 +66,7 @@ def process_domain(domain_data: Dict[str, Any], output_base: Path, model) -> Non
     domain_name = domain_data["domain"]
     
     # Create directories for plans and full answers
-    domain_output = output_base / domain_name
+    domain_output = output_base / "pddl" / domain_name
     domain_output.mkdir(parents=True, exist_ok=True)
     
     full_answers_dir = output_base / "full_answers" / domain_name
