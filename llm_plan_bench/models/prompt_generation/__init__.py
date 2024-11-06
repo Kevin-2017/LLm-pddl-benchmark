@@ -6,7 +6,7 @@ import os
 
 
 class PromptGenerator(ABC):
-    def __init__(self, domain_pddl: str, task_pddl: str):
+    def __init__(self):
         """
         Initialize the prompt generator with PDDL files.
         
@@ -14,8 +14,8 @@ class PromptGenerator(ABC):
             domain_pddl (str): Content of the domain PDDL file
             task_pddl (str): Content of the task PDDL file
         """
-        self.domain_pddl = domain_pddl
-        self.task_pddl = task_pddl
+        # self.domain_pddl = domain_pddl
+        # self.task_pddl = task_pddl
 
     @abstractmethod
     def forward(self, *args, **kwargs) -> str:
@@ -67,3 +67,18 @@ def read_file(file_path: str) -> str:
     """
     with open(file_path, 'r') as f:
         return f.read().strip()
+    
+def read_pddl_file(file_path: str) -> str:
+    """
+    Read a PDDL file and filter out comment lines.
+    
+    Args:
+        file_path (str): Path to the PDDL file
+        
+    Returns:
+        str: Content of the file with comments removed
+    """
+    with open(file_path, 'r') as f:
+        # Filter out lines that start with semicolon (comments)
+        lines = [line for line in f.readlines() if not line.strip().startswith(';')]
+        return ''.join(lines)

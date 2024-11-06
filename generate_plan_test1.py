@@ -66,8 +66,11 @@ def read_prompts_from_json(json_path: str,
 if __name__ == "__main__":
     # Example JSON path
     json_path = "/ssd1/kevin/projects/llm_plan_bench/data/inputs/solve_plan/blocksworld.json"
-    model = lpb.BlackboxLLM("meta-llama/Meta-Llama-3-8B",device = 'cuda:0'
+    # model = lpb.BlackboxLLM("meta-llama/Llama-3.1-8B-Instruct",device = 'cuda:1'
+    # )
+    model = lpb.BlackboxLLM("/ssd1/kevin/huggingface/Llama-3.1-8B-Instruct",device = 'cuda:1'
     )
+    # /ssd1/kevin/huggingface/Llama-3.1-8B-Instruct
 
     questions = read_prompts_from_json(json_path)
     if questions:
