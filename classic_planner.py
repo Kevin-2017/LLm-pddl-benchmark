@@ -11,7 +11,6 @@ def generate_plan(domain_file, problem_file, output_file, downward_path='submodu
     Generate plan for a single problem instance
     """
     try:
-        # --alias lama-first
         cmd = [
             "python3", downward_path,
             "--alias", "lama-first",
@@ -89,7 +88,7 @@ def process_domain(domain_name, base_path, output_base_path, downward_path):
 def main():
     parser = argparse.ArgumentParser(description='Generate plans for PDDL domains and problems')
     parser.add_argument('--domain', default='', help='Specific domain to process (leave empty for all domains)')
-    parser.add_argument('--data_path', default='data/pddl', help='Base path for domains')
+    parser.add_argument('--input', default='data/pddl', help='Base path for domains')
     parser.add_argument('--output_path', default='experiments/fd_init', help='Base path for output')
     parser.add_argument('--downward_path', default='submodule/downward/fast-downward.py', 
                         help='Path to fast-downward.py')
@@ -101,18 +100,18 @@ def main():
     
     if args.domain:
         # Process specific domain
-        process_domain(args.domain, args.data_path, args.output_path, args.downward_path)
+        process_domain(args.domain, args.input, args.output_path, args.downward_path)
     else:
         # Process all domains
-        domains = [d for d in os.listdir(args.data_path) 
-                  if os.path.isdir(os.path.join(args.data_path, d)) and 
+        domains = [d for d in os.listdir(args.input) 
+                  if os.path.isdir(os.path.join(args.input, d)) and 
                   not d.startswith('.') and
-                  os.path.exists(os.path.join(args.data_path, d, 'instances'))]
+                  os.path.exists(os.path.join(args.input, d, 'instances'))]
         
         print(f"Found {len(domains)} domains: {domains}")
         
         for domain in domains:
-            process_domain(domain, args.data_path, args.output_path, args.downward_path)
+            process_domain(domain, args.input, args.output_path, args.downward_path)
 
 if __name__ == "__main__":
     main()
