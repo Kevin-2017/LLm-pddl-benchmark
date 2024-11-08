@@ -81,7 +81,7 @@ def process_domain(domain_name, base_path, output_base_path, downward_path):
     
     for idx, problem_file in enumerate(problem_files, 1):
         problem_path = os.path.join(instance_path, problem_file)
-        output_file = os.path.join(output_path, f"plan_{idx:02d}.txt")
+        output_file = os.path.join(output_path, f"p{idx:02d}.sol")
         
         print(f"\nProcessing problem {idx}/{len(problem_files)}: {problem_file}")
         generate_plan(domain_file, problem_path, output_file, downward_path)
@@ -90,7 +90,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generate plans for PDDL domains and problems')
     parser.add_argument('--domain', default='', help='Specific domain to process (leave empty for all domains)')
     parser.add_argument('--data_path', default='data/pddl', help='Base path for domains')
-    parser.add_argument('--output_path', default='exp1_fd_results/', help='Base path for output')
+    parser.add_argument('--output_path', default='experiments/fd_init', help='Base path for output')
     parser.add_argument('--downward_path', default='submodule/downward/fast-downward.py', 
                         help='Path to fast-downward.py')
     
