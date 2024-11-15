@@ -58,6 +58,9 @@ currently all the data is in the data folder, but this would change later when w
 ### Acknowledgement 
 The pddl data is from https://github.com/ipc2023-numeric/ipc2023-dataset/ 
 
+### Domain Description Document
+https://docs.google.com/document/d/1kTAL6AVW-7GO9Wak7cgrXwb4GYShBeTeMkZnhTD1wqE/edit?usp=sharing
+
 
 The llm engine is based on textgrad 
 
