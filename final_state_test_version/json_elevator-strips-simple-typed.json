@@ -1,0 +1,132 @@
+{
+    "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after each action? Generate your answer without explanation and in txt format like this: \nabove(f0, f1)\nabove(f0, f2)\nabove(f0, f3)",
+
+    
+    "pddl_domain": {
+      "domain_name": "miconic",
+      "requirements": [":strips"],
+      "types": {
+        "passenger": "object",
+        "floor": "object"
+      },
+      "predicates": {
+        "origin": {
+          "parameters": ["?person - passenger", "?floor - floor"],
+          "description": "entry of ?person is ?floor"
+        },
+        "destin": {
+          "parameters": ["?person - passenger", "?floor - floor"],
+          "description": "exit of ?person is ?floor"
+        },
+        "above": {
+          "parameters": ["?floor1 - floor", "?floor2 - floor"],
+          "description": "?floor2 is located above ?floor1"
+        },
+        "boarded": {
+          "parameters": ["?person - passenger"],
+          "description": "true if ?person has boarded the lift"
+        },
+        "not-boarded": {
+          "parameters": ["?person - passenger"],
+          "description": "true if ?person has not boarded the lift"
+        },
+        "served": {
+          "parameters": ["?person - passenger"],
+          "description": "true if ?person has alighted at their destination"
+        },
+        "not-served": {
+          "parameters": ["?person - passenger"],
+          "description": "true if ?person is not at their destination"
+        },
+        "lift-at": {
+          "parameters": ["?floor - floor"],
+          "description": "current position of the lift is at ?floor"
+        }
+      },
+
+      "initial_state": [
+        "above(f0, f1)",
+        "above(f0, f2)",
+        "above(f0, f3)",
+        "above(f1, f2)",
+        "above(f1, f3)",
+        "above(f2, f3)",
+        "destin(p0, f2)",
+        "destin(p1, f0)",
+        "lift-at(f0)",
+        "origin(p0, f3)",
+        "origin(p1, f2)"
+      ],
+      
+      "actions": [
+        {
+          "name": "board",
+          "parameters": ["?f - floor", "?p - passenger"],
+          "precondition": "(and (lift-at ?f) (origin ?p ?f))",
+          "effect": "(boarded ?p)"
+        },
+        {
+          "name": "depart",
+          "parameters": ["?f - floor", "?p - passenger"],
+          "precondition": "(and (lift-at ?f) (destin ?p ?f) (boarded ?p))",
+          "effect": "(and (not (boarded ?p)) (served ?p))"
+        },
+        {
+          "name": "up",
+          "parameters": ["?f1 - floor", "?f2 - floor"],
+          "precondition": "(and (lift-at ?f1) (above ?f1 ?f2))",
+          "effect": "(and (lift-at ?f2) (not (lift-at ?f1)))"
+        },
+        {
+          "name": "down",
+          "parameters": ["?f1 - floor", "?f2 - floor"],
+          "precondition": "(and (lift-at ?f1) (above ?f2 ?f1))",
+          "effect": "(and (lift-at ?f2) (not (lift-at ?f1)))"
+        }
+      ]
+    },
+
+
+    "actions_sequence": [
+      {
+        "action_name": "up",
+        "parameters": ["f0", "f3"]
+      },
+      {
+        "action_name": "board",
+        "parameters": ["f3", "p0"]
+      }
+    ],
+
+
+    "states_after_actions": {
+      "after_action_1": [
+        "above(f0, f1)",
+        "above(f0, f2)",
+        "above(f0, f3)",
+        "above(f1, f2)",
+        "above(f1, f3)",
+        "above(f2, f3)",
+        "destin(p0, f2)",
+        "destin(p1, f0)",
+        "lift-at(f3)",
+        "origin(p0, f3)",
+        "origin(p1, f2)"
+      ],
+      "after_action_2": [
+        "above(f0, f1)",
+        "above(f0, f2)",
+        "above(f0, f3)",
+        "above(f1, f2)",
+        "above(f1, f3)",
+        "above(f2, f3)",
+        "boarded(p0)",
+        "destin(p0, f2)",
+        "destin(p1, f0)",
+        "lift-at(f3)",
+        "origin(p0, f3)",
+        "origin(p1, f2)"
+      ]
+    }
+  }
+  
