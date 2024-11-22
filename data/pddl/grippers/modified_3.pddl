@@ -1,5 +1,5 @@
 (define (problem gripper_random_3)
-    (:domain gripper-strips)
+    (:domain gripper-multiagent)
     (:objects
         robot1 robot2 robot3 - robot
 room1 room2 - room
