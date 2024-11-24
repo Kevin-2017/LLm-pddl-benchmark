@@ -1,5 +1,6 @@
 from llm_plan_bench.models.engine import EngineLM, get_engine
 from llm_plan_bench.models.utils.roles import (SYSTEM_PROMPT_DEFAULT_ROLE)
+from typing import Union, List
 # from llm_plan_bench.models.variable import Variable
 
 
@@ -47,7 +48,7 @@ class LLMPlanCall(Function):
     # Currently still directly output plan
 
 
-    def forward(self, input_variable: str, response_role_description: str = SYSTEM_PROMPT_DEFAULT_ROLE) -> str:
+    def forward(self, input_variable: Union[str, List], response_role_description: str = SYSTEM_PROMPT_DEFAULT_ROLE) -> str:
         """
         The LLM call. This function will call the LLM with the input and return the response,
         

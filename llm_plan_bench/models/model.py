@@ -52,7 +52,7 @@ class BlackboxLLM(Module):
             params.append(self.system_prompt)
         return params
 
-    def forward(self, x: Union[str]) -> str:
+    def forward(self, x: Union[str, List]) -> str:
         """
         Perform an LLM call.
 

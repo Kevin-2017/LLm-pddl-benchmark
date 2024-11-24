@@ -42,13 +42,30 @@ class ChatLocalLLM(EngineLM, CachedEngine):
 
     def generate(
         self,
-        prompt: Union[str, List[str]],
+        prompt: Union[str, List[Union[str,dict]]],
         system_prompt: str = None,
         **kwargs
     ) -> str:
+        if isinstance(prompt, list) and all(isinstance(item, dict) for item in prompt):
+            return self._generate_from_history(prompt, system_prompt, **kwargs)
         if isinstance(prompt, list):
             prompt = "\n".join(prompt)
         return self._generate_response(prompt, system_prompt, **kwargs)
+        
+    def _generate_from_history(
+        self,
+        history,
+        system_prompt: str = None,
+        temperature: float = 0.95,
+        max_tokens: int = 1024,
+        top_p: float = 0.95,
+    ) -> str:
+        # data format:
+        # history = [
+        #     {"role": "user", "content": "Hi, my name is Albert"},
+        #     {"role": "assistant", "content": "Hello Albert, how can I help you today?"},
+        # ]
+        raise NotImplementedError("History generation is not yet supported for local models.")
 
     def _generate_response(
         self,

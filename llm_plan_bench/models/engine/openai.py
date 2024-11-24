@@ -73,16 +73,19 @@ class ChatOpenAI(EngineLM, CachedEngine):
         self.is_multimodal = is_multimodal
 
     @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
-    def generate(self, content: Union[str, List[Union[str, bytes]]], system_prompt: str=None, **kwargs):
+    def generate(self, content: Union[str, List[Union[str, bytes,dict]]], system_prompt: str=None, **kwargs):
         if isinstance(content, str):
             return self._generate_from_single_prompt(content, system_prompt=system_prompt, **kwargs)
         
-        elif isinstance(content, list):
+        elif isinstance(content, list) and not any(isinstance(item, dict) for item in content):
             has_multimodal_input = any(isinstance(item, bytes) for item in content)
             if (has_multimodal_input) and (not self.is_multimodal):
                 raise NotImplementedError("Multimodal generation is only supported for Claude-3 and beyond.")
             
             return self._generate_from_multiple_input(content, system_prompt=system_prompt, **kwargs)
+        elif isinstance(content, list) and all(isinstance(item, dict) for item in content):
+            return self._generate_from_history(content, system_prompt=system_prompt, **kwargs)
+
 
     def _generate_from_single_prompt(
         self, prompt: str, system_prompt: str=None, temperature=0, max_tokens=2000, top_p=0.99
@@ -178,6 +181,31 @@ class ChatOpenAI(EngineLM, CachedEngine):
         response_text = response.choices[0].message.content
         self._save_cache(cache_key, response_text)
         return response_text
+
+    def _generate_from_history(
+            self, history, system_prompt=None, temperature=0.95, max_tokens=2000, top_p=0.99
+    ):
+        sys_prompt_arg = system_prompt if system_prompt else self.system_prompt
+        ic(self.model_string)
+        if "o1" in self.model_string:
+            ic("using o1 model")
+            response = self.client.chat.completions.create(
+            model=self.model_string,
+            messages=history,
+        )
+        else:
+            response = self.client.chat.completions.create(
+                model=self.model_string,
+                messages=[
+                    {"role": "system", "content": sys_prompt_arg}
+                ] + history,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p,
+            )
+        response_text = response.choices[0].message.content
+        return response_text
+
 
 class AzureChatOpenAI(ChatOpenAI):
     def __init__(
