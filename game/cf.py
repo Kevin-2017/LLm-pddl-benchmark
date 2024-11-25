@@ -141,14 +141,14 @@ player1_model_list = [
 	"claude-3-5-haiku-20241022",
 
 	"gpt-4o",
-	"gpt-4o",
-	"gpt-4o",
+	# "gpt-4o",
+	# "gpt-4o",
 
-	"gpt-4-turbo",
+	# "gpt-4-turbo",
 
-	"gpt-4o-mini",
+	# "gpt-4o-mini",
 
-	"claude-3-5-sonnet-20241022",
+	# "claude-3-5-sonnet-20241022",
 ]
 player2_model_list = [
 	# "gpt-4o",
@@ -167,15 +167,15 @@ player2_model_list = [
 	"gpt-3.5-turbo",
 
 	"gpt-4o-mini"
-	"gpt-3.5-turbo",
-	"gpt-4-turbo",
+	# "gpt-3.5-turbo",
+	# "gpt-4-turbo",
 
-	"gpt-4o-mini",
-	"gpt-3.5-turbo",
+	# "gpt-4o-mini",
+	# "gpt-3.5-turbo",
 
-	"gpt-3.5-turbo",
+	# "gpt-3.5-turbo",
 
-	"claude-3-5-haiku-20241022",
+	# "claude-3-5-haiku-20241022",
 ]
 
 assert len(player1_model_list) == len(player2_model_list)

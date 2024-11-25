@@ -21,6 +21,7 @@ class ChatGemini(EngineLM, CachedEngine):
         self,
         model_string="gemini-pro",
         system_prompt=SYSTEM_PROMPT,
+        **kwargs
     ):
 
         root = platformdirs.user_cache_dir("textgrad")

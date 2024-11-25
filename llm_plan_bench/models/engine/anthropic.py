@@ -24,6 +24,7 @@ class ChatAnthropic(EngineLM, CachedEngine):
         model_string: str="claude-3-opus-20240229",
         system_prompt: str=SYSTEM_PROMPT,
         is_multimodal: bool=False,
+        **kwargs
     ):
         root = platformdirs.user_cache_dir("textgrad")
         cache_path = os.path.join(root, f"cache_anthropic_{model_string}.db")
