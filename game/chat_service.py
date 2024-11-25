@@ -1,4 +1,5 @@
 from openai import OpenAI
+import random
 import os
 import json
 from collections import defaultdict
@@ -33,6 +34,11 @@ def get_chat(model, messages):
 	# 		"content": "Hello, Claude"
 	# 	}
 	# ]
+	# save messages to a random file name
+	# random_file_name = os.path.join(current_dir, str(random.randint(1,1000)) + ".json")
+	# with open(random_file_name, "w") as f:
+	# 	json.dump(messages, f)
+
 	if model_dict[model] is None:
 		model_dict[model] = lpb.BlackboxLLM(model)
 	return model_dict[model](messages), 0

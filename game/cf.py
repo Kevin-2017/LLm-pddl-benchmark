@@ -9,7 +9,19 @@ from pettingzoo.classic import connect_four_v3
 import random
 import time
 from chat_service import get_chat
-from play_service import play
+from play_service import (
+	play,
+	forced_reasoning,
+	implicit_knowledge_generation,
+	future_based_reasoning,
+	in_context_learning_case,
+	in_context_learning_experience,
+	reasoning_history,
+	add_state_description,
+	append_user_message,
+	action_prompt,
+)
+
 # json_pattern = re.compile(r'\{(?:[^{}]|(?R))*\}', re.DOTALL)
 
 def generate_action_prompt(legal_moves):
@@ -91,19 +103,15 @@ O tokens are at places: {O_places}
 	
 	return grid_description + "\n", legal_moves_description + "\n", legal_moves
 
-def gen_move(player_messages, player_store_message, player_model, player_reasoning_action_steps, state_description, legal_move_description, legal_moves, truncate=True):
-	if truncate == True:
-		player_messages = player_messages[:2]
-	else:
-		print("Not truncating")
-	player_messages.append({
-		"role": "user",
-		"content": generate_reasoning_prompt(player_reasoning_action_steps) + "\n" + "Your opponent has made the move, and now the state is: \n" + state_description + "\n" +  generate_action_prompt(legal_moves)
-	})
-	player_store_message.append({
-		"role": "user",
-		"content": generate_reasoning_prompt(player_reasoning_action_steps) + "\n" + "Your opponent has made the move, and now the state is: \n" + state_description + "\n" +  generate_action_prompt(legal_moves)
-	})
+def gen_move(player_messages, player_model):
+	# player_messages.append({
+	# 	"role": "user",
+		# "content": generate_reasoning_prompt(player_reasoning_action_steps) + "\n" + "Your opponent has made the move, and now the state is: \n" + state_description + "\n" +  generate_action_prompt(legal_moves)
+	# })
+	# player_store_message.append({
+	# 	"role": "user",
+	# 	"content": generate_reasoning_prompt(player_reasoning_action_steps) + "\n" + "Your opponent has made the move, and now the state is: \n" + state_description + "\n" +  generate_action_prompt(legal_moves)
+	# })
 	content, used_token = get_chat(player_model, player_messages)
 	try:
 		matches = json_pattern.findall(content)
@@ -123,7 +131,6 @@ def gen_move(player_messages, player_store_message, player_model, player_reasoni
 		reason = None
 	return move, content, used_token, action, reason
 
-
 player1_model_list = [
 	# "gemini-1.5-flash",
 	# "gemini-1.5-flash",
@@ -138,7 +145,7 @@ player1_model_list = [
 	# "claude-3-5-haiku-20241022",
 	# "claude-3-5-haiku-20241022",
 	# "claude-3-5-haiku-20241022",
-	"claude-3-5-haiku-20241022",
+	# "claude-3-5-haiku-20241022",
 
 	"gpt-4o",
 	# "gpt-4o",
@@ -164,7 +171,7 @@ player2_model_list = [
 	# "gpt-4o",
 	# "gpt-4o-mini",
 	# "gpt-4-turbo",
-	"gpt-3.5-turbo",
+	# "gpt-3.5-turbo",
 
 	"gpt-4o-mini"
 	# "gpt-3.5-turbo",
@@ -274,10 +281,27 @@ for model_index in range(len(player1_model_list)):
 				action = None
 			else:
 				if agent == 'player_0':
-					move, action, win, game_state, added_tokens = play(first_player_messages, first_player_store_message, player1_model, first_player_reasoning_action_steps, grid_description, legal_moves_description, legal_moves, gen_move, illegal_tolerance)
+					first_player_messages = first_player_messages[:2]
+					# generate hook functions
+					hook_functions = {
+						implicit_knowledge_generation: {"interactive_times": 1, "prompt_messages": ["Tell me about the skills, the experience of playing Connect Four, and then you need to use those skills and experience against your opponent"]},
+						reasoning_history: {"player_reasoning_action_steps": first_player_reasoning_action_steps,"count":3},
+						add_state_description: {"state_description": "Your opponent has made the move, and now the state is: \n" + grid_description + "\n"},
+						forced_reasoning: {"interactive_times": 1, "prompt_messages": ["Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail."]},
+						# future_based_reasoning: {"interactive_times": 1, "prompt_messages": ["Please reason about the future. You should analyze the possible moves and the possible outcomes of the game."]},
+						action_prompt: {"action_prompt": generate_action_prompt(legal_moves)},
+					}
+					move, action, win, game_state, added_tokens = play(first_player_messages, first_player_store_message, player1_model, first_player_reasoning_action_steps, grid_description, legal_moves_description, legal_moves, gen_move, illegal_tolerance,True, hook_functions)
 					total_tokens += added_tokens
 				elif agent == 'player_1':
-					move, action, win, game_state, added_tokens = play(second_player_messages, second_player_store_message, player2_model, second_player_reasoning_action_steps, grid_description, legal_moves_description, legal_moves, gen_move, illegal_tolerance)
+					second_player_messages = second_player_messages[:2]
+					# generate hook functions
+					hook_functions = {
+						reasoning_history: {"player_reasoning_action_steps": first_player_reasoning_action_steps,"count":3},
+						add_state_description: {"state_description": "Your opponent has made the move, and now the state is: \n" + grid_description + "\n"},
+						action_prompt: {"action_prompt": generate_action_prompt(legal_moves)},
+					}
+					move, action, win, game_state, added_tokens = play(second_player_messages, second_player_store_message, player2_model, second_player_reasoning_action_steps, grid_description, legal_moves_description, legal_moves, gen_move, illegal_tolerance,True, hook_functions)
 					total_tokens += added_tokens
 			game_log.append({
 				"agent": agent,
