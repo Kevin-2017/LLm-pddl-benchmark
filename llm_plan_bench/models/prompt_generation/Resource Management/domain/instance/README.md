@@ -1,1 +1,1 @@
-Placeholder for Resource Management instance.
+Placeholder for Resource Management domain instance.

@@ -1,1 +1,1 @@
-Placeholder for Temporal Planning instance.
+Placeholder for Temporal Planning domain instance.

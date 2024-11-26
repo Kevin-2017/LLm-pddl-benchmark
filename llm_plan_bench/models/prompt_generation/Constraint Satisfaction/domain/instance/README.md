@@ -1,1 +1,1 @@
-Placeholder for Constraint Satisfaction instance.
+Placeholder for Constraint Satisfaction domain instance.
