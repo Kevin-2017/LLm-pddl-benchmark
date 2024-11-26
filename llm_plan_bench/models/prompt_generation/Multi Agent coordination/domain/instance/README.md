@@ -1,1 +1,1 @@
-Placeholder for Multi Agent coordination domain instance.
+Placeholder for Multi Agent coordination domain.

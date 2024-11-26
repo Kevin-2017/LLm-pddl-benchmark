@@ -1,1 +1,1 @@
-Placeholder for Spatial Reasoning_tracking domain instance.
+Placeholder for Spatial Reasoning_tracking domain.
