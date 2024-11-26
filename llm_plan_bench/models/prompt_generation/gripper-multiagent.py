@@ -20,9 +20,9 @@ for i in range(1, num_problems + 1):
     rooms = random.randint(min_rooms, max_rooms)
     objects = random.randint(min_objects, max_objects)
 
-    # Define problem name and path
-    problem_name = f"multiagent_problem_{i}"
-    problem_file = os.path.join(output_dir, f"{problem_name}.pddl")
+    # Define problem name and path with zero-padded numbering
+    problem_name = f"pd{i:02d}.pddl"  # Zero-padded, e.g., pd01.pddl, pd02.pddl
+    problem_file = os.path.join(output_dir, problem_name)
 
     # Generate PDDL content
     objects_section = (
