@@ -39,7 +39,12 @@ for i in range(1, num_problems + 1):
         "\n".join([f"(at ball{b} room{random.randint(1, rooms)})" for b in range(1, objects + 1)])
     )
 
-    # Add cooperative goal: Transport shared objects
+    # Assign collaboration requirement for objects
+    for b in range(1, objects + 1):
+        if random.choice([True, False]):  # 50% chance of requiring collaboration
+            init_section += f"\n(needs-collaboration ball{b})"
+
+    # Define a shared goal for all objects
     shared_goal_room = random.randint(1, rooms)
     goal_section = (
         "\n".join([f"(at ball{b} room{shared_goal_room})" for b in range(1, objects + 1)])
