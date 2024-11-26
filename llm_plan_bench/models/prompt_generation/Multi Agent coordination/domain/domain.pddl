@@ -1,4 +1,4 @@
-(define (domain gripper-multiagent)
+(define (domain domain)
   (:requirements :strips :typing)
   (:types room object robot gripper)
 
