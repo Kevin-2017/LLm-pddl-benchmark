@@ -33,23 +33,29 @@ for i in range(1, num_problems + 1):
         " ".join([f"lgripper{r}" for r in range(1, robots + 1)]) + " - gripper"
     )
 
+    # Generate initial robot positions
+    robot_positions = {f"robot{r}": random.randint(1, rooms) for r in range(1, robots + 1)}
     init_section = (
-        "\n".join([f"(at-robby robot{r} room{random.randint(1, rooms)})" for r in range(1, robots + 1)]) + "\n" +
-        "\n".join([f"(free robot{r} rgripper{r})\n(free robot{r} lgripper{r})" for r in range(1, robots + 1)]) + "\n" +
-        "\n".join([f"(at ball{b} room{random.randint(1, rooms)})" for b in range(1, objects + 1)])
+        "\n".join([f"(at-robby {robot} room{room})" for robot, room in robot_positions.items()]) + "\n" +
+        "\n".join([f"(free robot{r} rgripper{r})\n(free robot{r} lgripper{r})" for r in range(1, robots + 1)])
     )
 
-    # Assign collaboration requirement for objects
-    for b in range(1, objects + 1):
-        if random.choice([True, False]):  # 50% chance of requiring collaboration
-            init_section += f"\n(needs-collaboration ball{b})"
+    # Generate initial object positions and ensure at least one requires collaboration
+    object_positions = {f"ball{b}": random.randint(1, rooms) for b in range(1, objects + 1)}
+    collaborative_objects = random.sample(list(object_positions.keys()), k=max(1, len(object_positions) // 2))
+    init_section += "\n" + "\n".join([f"(at {obj} room{room})" for obj, room in object_positions.items()])
+    init_section += "\n" + "\n".join([f"(needs-collaboration {obj})" for obj in collaborative_objects])
 
-    # Define a shared goal for all objects
+    # Ensure the goal state is not trivially satisfied
     shared_goal_room = random.randint(1, rooms)
+    while shared_goal_room in object_positions.values():
+        shared_goal_room = random.randint(1, rooms)
+
     goal_section = (
-        "\n".join([f"(at ball{b} room{shared_goal_room})" for b in range(1, objects + 1)])
+        "\n".join([f"(at {obj} room{shared_goal_room})" for obj in object_positions.keys()])
     )
 
+    # Compile the PDDL content
     pddl_content = f"""
 (define (problem {problem_name})
     (:domain gripper-multiagent)
