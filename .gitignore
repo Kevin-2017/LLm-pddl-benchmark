@@ -19,3 +19,6 @@ ENV/
 .env/
 .venv/
 
+data/pddl/grippers/LLm-pddl-benchmark/
+data/pddl/grippers/multiagent_problem_1.pddl
+data/pddl/grippers/sas_plan
