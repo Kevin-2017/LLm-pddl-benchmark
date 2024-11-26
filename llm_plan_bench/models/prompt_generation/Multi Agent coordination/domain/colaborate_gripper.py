@@ -21,7 +21,7 @@ for i in range(1, num_problems + 1):
     objects = random.randint(min_objects, max_objects)
 
     # Define problem name and path with zero-padded numbering
-    problem_name = f"pd{i:02d}.pddl"  # Zero-padded, e.g., pd01.pddl, pd02.pddl
+    problem_name = f"p{i:02d}.pddl"  # Zero-padded, e.g., p01.pddl, p02.pddl
     problem_file = os.path.join(output_dir, problem_name)
 
     # Generate PDDL content
@@ -58,7 +58,7 @@ for i in range(1, num_problems + 1):
     # Compile the PDDL content
     pddl_content = f"""
 (define (problem {problem_name})
-    (:domain gripper-multiagent)
+    (:domain domain)
     (:objects
         {objects_section}
     )
