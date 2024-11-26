@@ -1,6 +1,36 @@
 import json
 from chat_service import get_chat
 
+# player1_model_list = [
+# 	{
+# 		"model": "gpt-4o-mini",
+# 		"prompt_config": [],
+# 	},
+# 	{
+# 		"model": "gpt-4o-mini",
+# 		"prompt_config": [
+# 			{
+# 				"name": "forced-reasoning",
+# 				"params": {
+# 					"interactive_times": 1,
+# 					"prompt_messages": ["Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail."]
+# 				}
+# 			}
+# 		]
+# 	},
+# 	{
+# 		"model": "gpt-4o-mini",
+# 		"prompt_config": [
+# 			{
+# 				"name": "reasoning-history",
+# 				"params": {
+# 					"count": 3,
+# 				}
+# 			}
+# 		]
+# 	}
+# ]
+
 def play(player_messages, player_store_message, player_model, player_reasoning_action_steps, state_description, legal_move_description, legal_moves, gen_move=None, illegal_tolerance=10,print_content=True, hook_functions=None):
     # in hook_functions, key is the function, and the value is the additional arguments
     win = None
@@ -96,7 +126,7 @@ Your previous moves and thinking are below  (in the last {count} moves in the or
 
 def append_user_message(player_messages, player_store_message, user_message):
     # check the role of the last message
-    if player_messages[-1]["role"] == "assistant":
+    if len(player_messages) == 0 or player_messages[-1]["role"] == "assistant":
         player_messages.append({
             "role": "user",
             "content": user_message
@@ -118,3 +148,29 @@ def append_assistant_message(player_messages, player_store_message, assistant_me
         "role": "assistant",
         "content": assistant_message
     })
+
+def append_message_pair(player_messages, player_store_message, message_list):
+    assert len(message_list) == 2, "Message list should have two messages"
+    assert player_messages[-1]["role"] == "assistant", "The last message should be assistant"
+    player_messages.extend(message_list)
+    player_store_message.extend(message_list)
+
+def create_hook_functions(model, player_reasoning_action_steps, state_description, action_prompt_text):
+    prompt_dict = {}
+    for prompt in model["prompt_config"]:
+        prompt_dict[prompt["name"]] = prompt["params"]
+
+    hook_functions = {}
+    if "reasoning-history" in prompt_dict.keys():
+        hook_functions[reasoning_history] = { "count": prompt_dict["reasoning-history"]["count"], "player_reasoning_action_steps": player_reasoning_action_steps }
+
+    # necessary
+    hook_functions[add_state_description] = { "state_description": state_description }
+
+    if "forced-reasoning" in prompt_dict.keys():
+        hook_functions[forced_reasoning] = { "interactive_times": prompt_dict["forced-reasoning"]["interactive_times"], "prompt_messages": prompt_dict["forced-reasoning"]["prompt_messages"] }
+
+    # necessary
+    hook_functions[action_prompt] = { "action_prompt": action_prompt_text }
+
+    return hook_functions
