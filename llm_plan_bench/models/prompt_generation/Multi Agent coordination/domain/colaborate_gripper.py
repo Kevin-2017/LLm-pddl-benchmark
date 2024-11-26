@@ -47,9 +47,10 @@ for i in range(1, num_problems + 1):
     init_section += "\n" + "\n".join([f"(needs-collaboration {obj})" for obj in collaborative_objects])
 
     # Ensure the goal state is not trivially satisfied
-    shared_goal_room = random.randint(1, rooms)
-    while shared_goal_room in object_positions.values():
-        shared_goal_room = random.randint(1, rooms)
+    all_rooms = set(range(1, rooms + 1))
+    occupied_rooms = set(object_positions.values())
+    available_rooms = list(all_rooms - occupied_rooms)
+    shared_goal_room = random.choice(available_rooms) if available_rooms else random.choice(list(all_rooms))
 
     goal_section = (
         "\n".join([f"(at {obj} room{shared_goal_room})" for obj in object_positions.keys()])
@@ -77,4 +78,4 @@ for i in range(1, num_problems + 1):
     with open(problem_file, "w") as file:
         file.write(pddl_content.strip())
 
-    print(f"Generated: {problem_file}")
+print(f"Generated {num_problems} PDDL problems in '{output_dir}' directory.")
