@@ -1,0 +1,137 @@
+{
+    "udoc": {
+        "_id": 2,
+        "uname": "yao",
+        "mail": "cnyaojz@gmail.com",
+        "perm": "BigInt::-1",
+        "role": "root",
+        "priv": -1,
+        "regat": "2024-11-04T03:14:15.502Z",
+        "loginat": "2024-11-27T15:23:23.856Z",
+        "tfa": false,
+        "authn": false
+    },
+    "rdoc": {
+        "_id": "674739c2545795241003f82e",
+        "status": 2,
+        "uid": 2,
+        "code": "\n#include <bits/stdc++.h>\nusing namespace std;\nint a[1005][1005];\nint main (){\n\tint n,dir=0;\n\tscanf (\"%d\",&n);\n\tint dx[4]={1,0,-1,0},x=1;\n\tint dy[4]={0,-1,0,1},y=n;\n\tfor (int i=1;i<=n*n;i++){\n\t\ta[x][y]=i;\n\t\tx+=dx[dir];\n\t\ty+=dy[dir];\n\t\tif (x<=0||x>n||y<=0||y>n||a[x][y]){\n\t\t\tx-=dx[dir];y-=dy[dir];\n\t\t\tdir=(dir+1)%4;\n\t\t\tx+=dx[dir];y+=dy[dir];\n\t\t}\n\t}\n\tfor (int i=1;i<=n;i++){\n\t\tfor (int j=1;j<=n;j++){\n\t\t\tprintf (\"%d \",a[i][j]);\n\t\t}\n\t\tputs(\"\");\n\t}\n\treturn 0;\n}\n",
+        "lang": "cc.cc11",
+        "pid": 4,
+        "domainId": "system",
+        "score": 33,
+        "time": 4.288,
+        "memory": 6628,
+        "judgeTexts": [
+            {
+                "message": "Found {0} testcases.",
+                "params": [
+                    3
+                ]
+            }
+        ],
+        "compilerTexts": [],
+        "testCases": [
+            {
+                "id": 1,
+                "subtaskId": 1,
+                "status": 1,
+                "score": 33,
+                "time": 1.805,
+                "memory": 6424,
+                "message": ""
+            },
+            {
+                "id": 2,
+                "subtaskId": 1,
+                "status": 2,
+                "score": 0,
+                "time": 0,
+                "memory": 6628,
+                "message": "1c1\n< 1 \n---\n>  1"
+            },
+            {
+                "id": 3,
+                "subtaskId": 1,
+                "status": 2,
+                "score": 0,
+                "time": 2.483,
+                "memory": 6424,
+                "message": "Standard answer longer than user output."
+            }
+        ],
+        "judger": 1,
+        "judgeAt": "2024-11-27T15:24:51.443Z",
+        "rejudged": false,
+        "files": {},
+        "subtasks": {
+            "1": {
+                "type": "sum",
+                "score": 33,
+                "status": 2
+            }
+        }
+    },
+    "pdoc": {
+        "_id": "67283c69b621b103438e9e54",
+        "owner": 2,
+        "domainId": "system",
+        "docType": 10,
+        "docId": 4,
+        "title": "\u65b9\u9635\u586b\u6570",
+        "tag": [
+            "NOIP\u5168\u56fd\u8054\u8d5b\u666e\u53ca\u7ec4 1995\u5e74NOIP\u5168\u56fd\u8054\u8d5b\u666e\u53ca\u7ec4"
+        ],
+        "hidden": false,
+        "nSubmit": 40,
+        "nAccept": 0,
+        "config": {
+            "count": 0,
+            "memoryMin": 125,
+            "memoryMax": 125,
+            "timeMin": 1000,
+            "timeMax": 1000,
+            "type": "default"
+        },
+        "stats": {
+            "AC": 0,
+            "WA": 2,
+            "TLE": 0,
+            "MLE": 0,
+            "RE": 0,
+            "SE": 0,
+            "IGN": 0,
+            "CE": 38,
+            "s0": 38,
+            "s33": 2
+        }
+    },
+    "UiContext": {
+        "cdn_prefix": "/",
+        "url_prefix": "/",
+        "ws_prefix": "/",
+        "constantVersion": "3b7146a4",
+        "domainId": "system",
+        "domain": {
+            "_id": "system",
+            "lower": "system",
+            "owner": 1,
+            "name": "Hydro",
+            "bulletin": "### \u6b22\u8fce\u6765\u5230 Hydro \uff01  \n\n\u5f53\u4f60\u770b\u5230\u8fd9\u884c\u5b57\u65f6\uff0c\u8bf4\u660e Hydro \u7684\u57fa\u7840\u529f\u80fd\u5df2\u7ecf\u6b63\u5e38\u8fd0\u884c\u3002  \n\u4e0b\u4e00\u6b65\u60a8\u5e94\u8be5\uff1a\n\n- \u5728\u53f3\u4e0a\u89d2\u6ce8\u518c\u4e00\u4e2a\u8d26\u53f7\u3002  \n- \u56de\u5230\u521a\u521a\u7684\u7ec8\u7aef\uff0c\u4f7f\u7528 `hydrooj cli user setSuperAdmin 2` \u5c06 UID \u4e3a 2 \u7684\u7528\u6237\u8bbe\u7f6e\u4e3a\u8d85\u7ea7\u7ba1\u7406\u5458\u3002  \n- \u4f7f\u7528 `pm2 restart hydrooj` \u91cd\u542f\u4ee5\u4f7f\u7ba1\u7406\u5458\u66f4\u6539\u7acb\u523b\u751f\u6548\u3002  \n- \u524d\u5f80 \u201c\u9898\u5e93\u201d \u9762\u677f\uff0c\u67e5\u770b\u521b\u5efa\u7684\u793a\u4f8b\u9898\u76ee\u662f\u5426\u6b63\u5e38\u5de5\u4f5c\u3002  \n- \u4f7f\u7528\u8d85\u7ea7\u7ba1\u7406\u5458\u8d26\u53f7\u767b\u5f55\uff0c\u901a\u8bfb [\u63a7\u5236\u9762\u677f -> \u7cfb\u7edf\u8bbe\u7f6e](/manage/setting) \u9875\u9762\uff0c\u6309\u9700\u914d\u7f6e\u3002  \n\n\u5982\u679c\u60a8\u9700\u8981\u53ef\u4ee5\u76f4\u63a5\u5bfc\u5165\u7684\u9898\u76ee\uff0c\u53ef\u4ee5 [\u52a0\u5165 Hydro \u7528\u6237\u7fa4](https://jq.qq.com/?_wv=1027&k=pKYrk4yp) \u6216\u662f [\u4ece Hydro \u9898\u5e93\u4e0b\u8f7d](https://hydro.ac/d/tk/p) \u3002  \n\u60a8\u4e5f\u53ef\u4ee5\u4e0b\u8f7d [\u4e00\u672c\u901a\u7f16\u7a0b\u542f\u8499](https://hydro.ac/ybtbas.zip) \u548c [\u6df1\u5165\u6d45\u51fa\u7a0b\u5e8f\u8bbe\u8ba1\u7ade\u8d5b\uff08\u57fa\u7840\u7bc7\uff09](https://hydro.ac/srqc.zip) \u9898\u5e93\u5e76\u6309\u7167\u538b\u7f29\u5305\u5185\u8bf4\u660e\u5bfc\u5165\u7cfb\u7edf\u3002  \n\u5982\u679c\u60a8\u9700\u8981\u9898\u76ee\u914d\u7f6e\u6307\u5357\uff0c\u53ef\u4ee5 [\u67e5\u770b\u6587\u6863](https://hydro.js.org) \u6216\u662f [\u67e5\u770b\u914d\u7f6e\u793a\u4f8b](https://hydro.ac/d/system_test/) \u3002\n\n\u5f53\u4f60\u5df2\u7ecf\u719f\u6089\u672c\u7cfb\u7edf\u7684\u64cd\u4f5c\uff0c\u53ef\u4ee5\u5728 [\u7ba1\u7406\u57df > \u7f16\u8f91\u57df\u8d44\u6599](/domain/edit) \u9875\u9762\u4fee\u6539\u8fd9\u6761\u7f6e\u9876\u4fe1\u606f\u3002\n\n### Welcome to Hydro !  \n\nIf you see this line, it means Hydro is running normally.  \nNext step you should:\n\n- Register a new account.  \n- Go back to the terminal, use `hydrooj cli user setSuperAdmin 2` to set user with UID 2 as super admin.  \n- Use `pm2 restart hydrooj` to make the change take effect.  \n- Go to \u201cProblems\u201d panel, check whether the example problem is working properly.  \n- Use super admin account to login, read the [Control panel -> System settings](/manage/setting) page, configure as needed.\n\nIf you want to import problems, you can join [Hydro QQ user group](https://jq.qq.com/?_wv=1027&k=pKYrk4yp) \nor download from [Hydro problem library](https://hydro.ac/d/tk/p) .  \nYou can also download [Guide to Competitive Programming](https://hydro.ac/ybtbas.zip)\nand [In-depth Programming Competition (Basics)](https://hydro.ac/srqc.zip) and follow the instructions\nin the zip file to import to the system (Chinese version only).\nIf you need problem configuration guide, you can [view user manual](https://hydro.js.org) or \n[view examples](https://hydro.ac/d/system_test/) .\n\nThis message can be modified in [Domain > Edit information](/domain/edit) page.\n",
+            "roles": {},
+            "avatar": ""
+        },
+        "SWConfig": {
+            "preload": "",
+            "hosts": [
+                "http://cnyaojz.com:25568",
+                "https://cnyaojz.com:25568",
+                "/",
+                "/"
+            ],
+            "assets": [],
+            "domains": []
+        }
+    },
+    "UserContext": "{\"_id\":2,\"mail\":\"cnyaojz@gmail.com\",\"uname\":\"yao\",\"hashType\":\"hydro\",\"priv\":-1,\"regat\":\"2024-11-04T03:14:15.502Z\",\"loginat\":\"2024-11-27T15:23:23.856Z\",\"perm\":\"BigInt::-1\",\"role\":\"root\",\"scope\":\"BigInt::-1\",\"tfa\":false,\"authn\":false,\"group\":[\"2\"],\"domains\":[],\"timeZone\":\"Asia/Shanghai\",\"codeLang\":\"bash\",\"avatar\":\"gravatar:cnyaojz@gmail.com\",\"gender\":2,\"backgroundImage\":\"/components/profile/backgrounds/1.jpg\",\"pinnedDomains\":[],\"fontFamily\":\"Open Sans\",\"codeFontFamily\":\"Source Code Pro\",\"preferredEditorType\":\"sv\",\"theme\":\"light\",\"formatCode\":true,\"showTimeAgo\":true,\"nAccept\":52,\"nSubmit\":54,\"rp\":0,\"rpInfo\":{},\"level\":0,\"avatarUrl\":\"//cn.gravatar.com/avatar/b59fe4b7c16602ea33887a7517ebacb0?d=mm&s=128\"}"
+}
