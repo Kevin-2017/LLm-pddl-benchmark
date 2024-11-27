@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(".."))
 import llm_plan_bench as lpb
 model_name = "ollama-qwen2.5-coder:32b"
 lang = "py.py3"
+max_trial_times = 5
 model = lpb.BlackboxLLM(model_name)
 
 username = "yao"  # Replace with your username
@@ -126,9 +127,10 @@ def parse_feedback_text(rdoc):
 		feedback_text += f"Memory: {test_case['memory']}\n\n"
 	return feedback_text
 
+total_score = 0
 
 # for problem_id in range(102, 182):
-for problem_id in range(103, 110):
+for problem_id in range(103, 113):
 	fetch_url = f"{web_ip}/p/{problem_id}"
 	headers = {
 	"Accept": "application/json"
@@ -146,8 +148,7 @@ for problem_id in range(103, 110):
 		print("Fetch problem failed:", e)
 		continue
 	print(problem_text)
-
-	error_tolerance = 10
+	sleep_time = problem["pdoc"]["config"]["timeMax"] * (len(problem["pdoc"]["data"]) / 2) / 1000
 	messages = [
 		{
 			"role": "user",
@@ -160,7 +161,7 @@ for problem_id in range(103, 110):
 	append_assistant_message(messages, copy.deepcopy(messages), content)
 	append_user_message(messages, copy.deepcopy(messages), f"""Now please explain your solution in detail, and generate the finalized code solution for this problem. I will upload the code to the online judge and then give you the feedback. Please format your response in a json file. The output must be in json format. The first key should be 'explanation', the second key should be 'lang' (compiler specified above in config), and the third key should be 'code'. The value should all be string. Please use the programming language lang = {lang}. Thank you very much! You should generate a whole and complete program that can be compiled and run directly in code.""")
 	this_score = 0
-	for trial_times in range(5):
+	for trial_times in range(max_trial_times):
 		while True:
 			content = model(messages)
 			try:
@@ -204,7 +205,7 @@ for problem_id in range(103, 110):
 			# log
 			continue
 		# /record/:rid
-		time.sleep(10)
+		time.sleep(sleep_time)
 		if rid is None:
 			print("No record ID found, exiting...")
 			# log
@@ -238,3 +239,9 @@ for problem_id in range(103, 110):
 		"lang": lang,
 		"messages": messages,
 	}, open(f"problem-{problem_id}-messages-{model_name}-{lang}.json", "w"), ensure_ascii=False, indent=4)
+	total_score += this_score
+
+print("Finish all problems")
+print("Model:", model_name)
+print("Total score:", total_score)
+
