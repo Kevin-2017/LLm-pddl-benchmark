@@ -1,29 +1,26 @@
-from openai import OpenAI
-import random
 import os
-import json
 from collections import defaultdict
-import google.generativeai as genai
-import anthropic
+# import google.generativeai as genai
 import sys
-import sys
-import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import llm_plan_bench as lpb
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-anthropic_client = anthropic.Anthropic(
-    api_key = os.environ["ANTHROPIC_API_KEY"]
-)
+# ollama list
+# NAME                                                     ID              SIZE      MODIFIED       
+# qwen2.5:latest                                           845dbda0ea48    4.7 GB    30 minutes ago    
+# mistral:latest                                           f974a74358d6    4.1 GB    31 minutes ago    
+# qwen2.5-coder:latest                                     2b0496514337    4.7 GB    31 minutes ago    
+# llama3.2:latest                                          a80c4f17acd5    2.0 GB    31 minutes ago    
+# hf.co/bartowski/Llama-3-Groq-70B-Tool-Use-GGUF:Q5_K_S    2a4595cb3862    48 GB     3 weeks ago       
+# llama3.1:70b-text-fp16                                   391fbe608631    141 GB    4 weeks ago       
+# llama3.1:70b-instruct-fp16                               80d34437631f    141 GB    4 weeks ago       
+# llama3.1:70b-instruct-q4_0                               c0df3564cfe8    39 GB     4 weeks ago       
+# llama3:70b-instruct                                      786f3184aec0    39 GB     4 weeks ago       
+# llama3.1:70b                                             c0df3564cfe8    39 GB     4 weeks ago       
+# llama3.1:latest                                          42182419e950    4.7 GB    4 weeks ago 
 
-genai.configure(api_key=os.environ["GENAI_API_KEY"])
-# for m in genai.list_models():
-# 	print(m.name)
-Gemini_model = genai.GenerativeModel("models/gemini-1.5-flash")
-client = OpenAI(
-	api_key=os.environ["OPENAI_API_KEY"],
-)
 
 model_dict = defaultdict(lambda: None)
 

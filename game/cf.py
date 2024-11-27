@@ -194,116 +194,133 @@ def gen_move(player_messages, player_model):
 	return move, content, used_token, action, reason
 
 player1_model_list = [
+	# {
+	# 	"model": "gpt-4o-mini",
+	# 	"prompt_config": [
+	# 		{
+	# 			"name": "forced-reasoning",
+	# 			"params": {
+	# 				"interactive_times": 3,
+	# 				"prompt_messages": [
+	# 					"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+	# 					"Please reason about the current state again. You should analyze all the opponent's moves and your moves. Explain what you expect will happen in the next few moves.",
+	# 					"Please reason about the current state again. Think hard and analyze the situation with connect four's game strategy"
+	# 				]
+	# 			}
+	# 		}
+	# 	]
+	# },
 	{
-		"model": "gpt-4o-mini",
-		"prompt_config": [],
-	},
-	{
-		"model": "gpt-4o-mini",
+		"model": "ollama-qwen2.5-coder:latest",
 		"prompt_config": [
 			{
 				"name": "forced-reasoning",
 				"params": {
 					"interactive_times": 1,
-					"prompt_messages": ["Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail."]
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
 				}
 			}
-		]
+		],
 	},
 	{
-		"model": "gpt-4o-mini",
+		"model": "ollama-mistral:latest",
 		"prompt_config": [
 			{
-				"name": "reasoning-history",
+				"name": "forced-reasoning",
 				"params": {
-					"count": 3,
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
 				}
 			}
-		]
-	}
+		],
+	},
+	{
+		"model": "ollama-llama3.2:latest",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "gpt-4o",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "gpt-4-turbo",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "gpt-3.5-turbo",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
 ]
 player2_model_list = [
 	{
-		"model": "gpt-4o-mini",
+		"model": "ollama-qwen2.5-coder:latest",
 		"prompt_config": [],
 	},
 	{
-		"model": "gpt-4o-mini",
+		"model": "ollama-mistral:latest",
 		"prompt_config": [],
 	},
 	{
-		"model": "gpt-4o-mini",
+		"model": "ollama-llama3.2:latest",
+		"prompt_config": [],
+	},
+	{
+		"model": "gpt-4o",
+		"prompt_config": [],
+	},
+	{
+		"model": "gpt-4-turbo",
+		"prompt_config": [],
+	},
+	{
+		"model": "gpt-3.5-turbo",
 		"prompt_config": [],
 	},
 ]
-
-# player1_model_list = [
-# 	# "gemini-1.5-flash",
-# 	# "gemini-1.5-flash",
-# 	# "gemini-1.5-flash",
-# 	# "gemini-1.5-flash",
-# 	# "gemini-1.5-flash",
-# 	# "gemini-1.5-flash",
-# 	# "claude-3-5-sonnet-20241022",
-# 	# "claude-3-5-sonnet-20241022",
-# 	# "claude-3-5-sonnet-20241022",
-# 	# "claude-3-5-sonnet-20241022",
-# 	# "claude-3-5-haiku-20241022",
-# 	# "claude-3-5-haiku-20241022",
-# 	# "claude-3-5-haiku-20241022",
-# 	# "claude-3-5-haiku-20241022",
-
-# 	"gpt-4o-mini",
-# 	"gpt-4o-mini",
-# 	"gpt-4o-mini",
-# 	# "gpt-4o",
-# 	# "gpt-4o",
-
-# 	# "gpt-4-turbo",
-
-# 	# "gpt-4o-mini",
-
-# 	# "claude-3-5-sonnet-20241022",
-# ]
-# player1_model_name_list =[
-# 	"gpt-4o-mini",
-# 	"gpt-4o-mini-forced-reasoning",
-# 	"gpt-4o-mini-reasoning-history",
-# ]
-# player2_model_list = [
-# 	# "gpt-4o",
-# 	# "gpt-4o-mini",
-# 	# "gpt-4-turbo",
-# 	# "gpt-3.5-turbo",
-# 	# "claude-3-5-sonnet-20241022",
-# 	# "claude-3-5-haiku-20241022",
-# 	# "gpt-4o",
-# 	# "gpt-4o-mini",
-# 	# "gpt-4-turbo",
-# 	# "gpt-3.5-turbo",
-# 	# "gpt-4o",
-# 	# "gpt-4o-mini",
-# 	# "gpt-4-turbo",
-# 	# "gpt-3.5-turbo",
-
-# 	"gpt-4o-mini",
-# 	"gpt-4o-mini",
-# 	"gpt-4o-mini",
-# 	# "gpt-3.5-turbo",
-# 	# "gpt-4-turbo",
-
-# 	# "gpt-4o-mini",
-# 	# "gpt-3.5-turbo",
-
-# 	# "gpt-3.5-turbo",
-
-# 	# "claude-3-5-haiku-20241022",
-# ]
-# player2_model_name_list =[
-# 	"gpt-4o-mini",
-# 	"gpt-4o-mini",
-# 	"gpt-4o-mini",
-# ]
 
 print(len(player1_model_list))
 print(len(player2_model_list))
@@ -385,6 +402,8 @@ for model_index in range(len(player1_model_list)):
 			print(grid_description)
 			rewards = env.rewards
 			print(rewards)
+			if win != None:
+				break
 			if win == None:
 				if len(list(rewards.keys())) == 1 and rewards[list(rewards.keys())[0]] == 0:
 					print("Draw!")
@@ -431,12 +450,17 @@ for model_index in range(len(player1_model_list)):
 				"reward": env.rewards,
 				"action_mask": observation["action_mask"].tolist(),
 			})
-			env.step(move)
+			try:
+				env.step(move)
+			except Exception as e:
+				print(e)
+				break
 		env.close()
 
-
+		player1_model_save_name = player1_model_name + "-".join([i["name"] for i in player1_model["prompt_config"]])
+		player2_model_save_name = player2_model_name + "-".join([i["name"] for i in player2_model["prompt_config"]])
 		# save the chat log for two players
-		with open(f"cf_{game_index}_{player1_model_name}_{player2_model_name}.json", "w") as f:
+		with open(f"cf_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
 			json.dump({
 				"status": {
 					0: "Player 1 wins!",
@@ -452,12 +476,12 @@ for model_index in range(len(player1_model_list)):
 					3: "Player 2",
 					4: "Player 1",
 				}[win],
-				"player1_model": player1_model_name,
-				"player2_model": player2_model_name,
+				"player1_model": player1_model,
+				"player2_model": player2_model,
 				"total_tokens": total_tokens,
 				"illegal_tolerance": illegal_tolerance,
 				"number_of_requests": len(game_log)/2,
-				"game_log": game_log,
 				"first_player_messages": first_player_store_message,
 				"second_player_messages": second_player_store_message,
+				"game_log": game_log,
 			}, f, indent=4)
