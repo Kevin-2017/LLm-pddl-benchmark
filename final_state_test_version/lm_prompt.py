@@ -6,9 +6,9 @@ import re
 import llm_plan_bench as lpb
 
 import torch
-# print(torch.cuda.is_available())  # Should return True if a CUDA-enabled GPU is available
-# print(torch.cuda.device_count())  # Should return the number of GPUs
-# print(torch.cuda.current_device())  # Should return the ID of the current GPU
+print(torch.cuda.is_available())  # Should return True if a CUDA-enabled GPU is available
+print(torch.cuda.device_count())  # Should return the number of GPUs
+print(torch.cuda.current_device())  # Should return the ID of the current GPU
 
 
 # Function to read the PDDL domain
@@ -105,7 +105,7 @@ def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_p
     
     # 将数据存储到初始 JSON 文件
     input_data = {
-        "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after each action? Generate your answer without explanation and in txt format like this: \nabove(f0, f1)\nabove(f0, f2)\nabove(f0, f3)",
+        "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after each action? Directly generate your answer without any explanation and in txt format like this: \n(empty shot4)\n(handempty left)\n(handempty right)",
         "pddl_domain": pddl_domain.split('\n'),
         "initial_state": initial_state,
         "action_sequence": first_two_actions,
@@ -117,7 +117,7 @@ def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_p
     print("Input JSON saved as input.json")
     
     # Initialize the LLM model
-    model = lpb.BlackboxLLM(model_path, device='cuda:7')
+    model = lpb.BlackboxLLM(model_path, device='cuda:6')
     # model = lpb.BlackboxLLM(model_path, device='cuda:7', attn_implementation="flash_attention_2")
 
     
