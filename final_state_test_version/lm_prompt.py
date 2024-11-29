@@ -65,19 +65,43 @@ def generate_plan_with_first_two_actions(solution_path, output_plan_path):
 def get_states_after_actions(domain_path, problem_path, plan_file_path):
     try:
         output = subprocess.check_output(['python3', 'state_print.py', domain_path, problem_path, plan_file_path], stderr=subprocess.STDOUT).decode('utf-8')
-        return [output.strip()]  # 返回最终状态
+        return output.strip().split('\n')  # Split by newline to get a list of states
     except subprocess.CalledProcessError as e:
         print(f"Error executing state_print.py: {e.output.decode('utf-8')}")
         return []
 
 # Function to call LLM and save the output to a JSON file
+# def call_llm_with_json_input(input_json_path, model, output_file):
+#     try:
+#         # 读取最初生成的JSON文件
+#         with open(input_json_path, 'r', encoding='utf-8') as json_file:
+#             data = json.load(json_file)
+        
+#         # 从JSON中取出除 states_after_actions 外的部分
+#         llama_input = {
+#             "prompt": data["prompt"],
+#             "pddl_domain": data["pddl_domain"],
+#             "initial_state": data["initial_state"],
+#             "action_sequence": data["action_sequence"]
+#         }
+
+#         print("Sending input to LLM...")
+#         response = model(json.dumps(llama_input, ensure_ascii=False, indent=4))  # 调用模型
+        
+#         # 将模型响应保存到指定文件
+#         with open(output_file, 'w', encoding='utf-8') as f:
+#             f.write(response)
+#         print(f"Model output saved to: {output_file}")
+#     except Exception as e:
+#         print(f"Error during LLM call: {e}")
+# Function to call LLM and save the output to a TXT file
 def call_llm_with_json_input(input_json_path, model, output_file):
     try:
-        # 读取最初生成的JSON文件
+        # Read the input JSON file
         with open(input_json_path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
         
-        # 从JSON中取出除 states_after_actions 外的部分
+        # Extract necessary input for the model
         llama_input = {
             "prompt": data["prompt"],
             "pddl_domain": data["pddl_domain"],
@@ -86,9 +110,9 @@ def call_llm_with_json_input(input_json_path, model, output_file):
         }
 
         print("Sending input to LLM...")
-        response = model(json.dumps(llama_input, ensure_ascii=False, indent=4))  # 调用模型
+        response = model(json.dumps(llama_input, ensure_ascii=False, indent=4))  # Call the model
         
-        # 将模型响应保存到指定文件
+        # Save the model's output to a TXT file
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(response)
         print(f"Model output saved to: {output_file}")
@@ -96,6 +120,34 @@ def call_llm_with_json_input(input_json_path, model, output_file):
         print(f"Error during LLM call: {e}")
 
 # Main function to generate JSON and call the LLM
+# def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_path):
+#     # Prepare input data for the LLM
+#     pddl_domain = read_pddl_domain(domain_path)
+#     initial_state = get_initial_state(problem_path)
+#     first_two_actions = generate_plan_with_first_two_actions(solution_path, 'temp_plan_file.plan')
+#     states_after_actions = get_states_after_actions(domain_path, problem_path, 'temp_plan_file.plan')
+    
+#     # 将数据存储到初始 JSON 文件
+#     input_data = {
+#         "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after each action? Directly generate your answer without any explanation and in txt format like this: \n(empty shot4)\n(handempty left)\n(handempty right)",
+#         "pddl_domain": pddl_domain.split('\n'),
+#         "initial_state": initial_state,
+#         "action_sequence": first_two_actions,
+#         "states_after_actions": states_after_actions  # 模型生成前的状态
+#     }
+    
+#     with open('input.json', 'w', encoding='utf-8') as f:
+#         json.dump(input_data, f, ensure_ascii=False, indent=4)
+#     print("Input JSON saved as input.json")
+    
+#     # Initialize the LLM model
+#     model = lpb.BlackboxLLM(model_path, device='cuda:6')
+#     # model = lpb.BlackboxLLM(model_path, device='cuda:7', attn_implementation="flash_attention_2")
+
+    
+#     # 调用 LLM 模型，并将结果保存到新的 JSON 文件
+#     call_llm_with_json_input('input.json', model, 'llm_output.json')
+
 def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_path):
     # Prepare input data for the LLM
     pddl_domain = read_pddl_domain(domain_path)
@@ -103,13 +155,13 @@ def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_p
     first_two_actions = generate_plan_with_first_two_actions(solution_path, 'temp_plan_file.plan')
     states_after_actions = get_states_after_actions(domain_path, problem_path, 'temp_plan_file.plan')
     
-    # 将数据存储到初始 JSON 文件
+    # Store data in the input JSON file
     input_data = {
-        "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after each action? Directly generate your answer without any explanation and in txt format like this: \n(empty shot4)\n(handempty left)\n(handempty right)",
+        "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after final action? Directly generate your answer without any explanation and in txt format like the initial state.",
         "pddl_domain": pddl_domain.split('\n'),
         "initial_state": initial_state,
         "action_sequence": first_two_actions,
-        "states_after_actions": states_after_actions  # 模型生成前的状态
+        "states_after_actions": states_after_actions
     }
     
     with open('input.json', 'w', encoding='utf-8') as f:
@@ -117,18 +169,18 @@ def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_p
     print("Input JSON saved as input.json")
     
     # Initialize the LLM model
-    model = lpb.BlackboxLLM(model_path, device='cuda:6')
-    # model = lpb.BlackboxLLM(model_path, device='cuda:7', attn_implementation="flash_attention_2")
-
+    model = lpb.BlackboxLLM(model_path)
     
-    # 调用 LLM 模型，并将结果保存到新的 JSON 文件
-    call_llm_with_json_input('input.json', model, 'llm_output.json')
+    # Call the LLM model and save the result as a TXT file
+    call_llm_with_json_input('input.json', model, 'llm_output.txt')
+
 
 def main():
     domain_path = 'domain-barman-sequencial-optimal.pddl'
     problem_path = 'instance-1-barman-sequential-optimal.pddl'
     solution_path = 'solution-barman-sequential-optimal.pddl'
-    model_path = "/ssd1/kevin/huggingface/Llama-3.1-8B-Instruct"
+    # model_path = "/ssd1/kevin/huggingface/Llama-3.1-8B-Instruct"
+    model_path = 'gpt-4o'
     
     if not os.path.exists(domain_path):
         print(f"Domain file not found: {domain_path}")
