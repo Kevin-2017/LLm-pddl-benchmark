@@ -157,7 +157,41 @@ def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_p
     
     # Store data in the input JSON file
     input_data = {
-        "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after final action? Directly generate your answer without any explanation and in txt format like the initial state.",
+        "prompt": (
+            "We are solving problems in PDDL format. Based on the PDDL domain, "
+            "what will be the states after final action? Directly generate your "
+            "answer without any explanation and in txt format like the initial state. "
+            "Here is a completed example, learn how this works and give me answers in the same format:"
+            "initial_state"
+            "predicates: "
+            "(above f0 f1)"
+            "(above f0 f2)"
+            "(above f0 f3)"
+            "(above f1 f2)"
+            "(above f1 f3)"
+            "(above f2 f3)"
+            "(origin p0 f3)"
+            "(destin p0 f2)"
+            "(origin p1 f2)"
+            "(destin p1 f0)"
+            "(lift-at f0)"
+            "action_sequence: #"
+            "(up f0 f3)"
+            "(board f3 p0)"
+            "states_after_actions: "
+            "(above f0 f1)"
+            "(above f0 f2)"
+            "(above f0 f3)"
+            "(above f1 f2)"
+            "(above f1 f3)"
+            "(above f2 f3)"
+            "(boarded p0)"
+            "(destin p0 f2)"
+            "(destin p1 f0)"
+            "(lift-at f3)"
+            "(origin p0 f3)"
+            "(origin p1 f2)" 
+        ),
         "pddl_domain": pddl_domain.split('\n'),
         "initial_state": initial_state,
         "action_sequence": first_two_actions,
@@ -176,10 +210,17 @@ def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_p
 
 
 def main():
+    #domain_path = '/ssd1/haisu/project/LLm-pddl-benchmark/final_state_test_version/domain-elevator-strips-simple-typed.pddl'
+    #problem_path = '/ssd1/haisu/project/LLm-pddl-benchmark/final_state_test_version/instance-10-elevator-strips-simple-typed.pddl'
+    #solution_path = '/ssd1/haisu/project/LLm-pddl-benchmark/final_state_test_version/solution-10-elevator-strips-simple-typed.pddl'
+
+
+
     domain_path = 'domain-barman-sequencial-optimal.pddl'
     problem_path = 'instance-1-barman-sequential-optimal.pddl'
     solution_path = 'solution-barman-sequential-optimal.pddl'
-    # model_path = "/ssd1/kevin/huggingface/Llama-3.1-8B-Instruct"
+
+    #model_path = "/ssd1/kevin/huggingface/Llama-3.1-8B-Instruct"
     model_path = 'gpt-4o'
     
     if not os.path.exists(domain_path):

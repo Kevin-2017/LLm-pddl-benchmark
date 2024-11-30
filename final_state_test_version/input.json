@@ -1,5 +1,5 @@
 {
-    "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after each action? Directly generate your answer without any explanation and in txt format like this: \n(empty shot4)\n(handempty left)\n(handempty right)",
+    "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after final action? Directly generate your answer without any explanation and in txt format like the initial state. Here is a completed example, learn how this works and give me answers in the same format:initial_statepredicates: (above f0 f1)(above f0 f2)(above f0 f3)(above f1 f2)(above f1 f3)(above f2 f3)(origin p0 f3)(destin p0 f2)(origin p1 f2)(destin p1 f0)(lift-at f0)action_sequence: #(up f0 f3)(board f3 p0)states_after_actions: (above f0 f1)(above f0 f2)(above f0 f3)(above f1 f2)(above f1 f3)(above f2 f3)(boarded p0)(destin p0 f2)(destin p1 f0)(lift-at f3)(origin p0 f3)(origin p1 f2)",
     "pddl_domain": [
         "(define (domain barman)",
         "  (:requirements :strips :typing :action-costs)",
@@ -211,6 +211,33 @@
         "(grasp right shot4)"
     ],
     "states_after_actions": [
-        "line 1:9 mismatched input 'problem' expecting 'domain'\n\nFinal State after all actions:\nStep 2:\n  clean(shaker1)\n  clean(shot1)\n  clean(shot2)\n  clean(shot3)\n  clean(shot4)\n  cocktail-part1(cocktail1, ingredient3)\n  cocktail-part1(cocktail2, ingredient2)\n  cocktail-part1(cocktail3, ingredient1)\n  cocktail-part2(cocktail1, ingredient1)\n  cocktail-part2(cocktail2, ingredient3)\n  cocktail-part2(cocktail3, ingredient2)\n  dispenses(dispenser1, ingredient1)\n  dispenses(dispenser2, ingredient2)\n  dispenses(dispenser3, ingredient3)\n  empty(shaker1)\n  empty(shot1)\n  empty(shot2)\n  empty(shot3)\n  empty(shot4)\n  holding(left, shaker1)\n  holding(right, shot4)\n  next(l0, l1)\n  next(l1, l2)\n  ontable(shot1)\n  ontable(shot2)\n  ontable(shot3)\n  shaker-empty-level(shaker1, l0)\n  shaker-level(shaker1, l0)"
+        "(clean shaker1)",
+        "(clean shot1)",
+        "(clean shot2)",
+        "(clean shot3)",
+        "(clean shot4)",
+        "(cocktail-part1 cocktail1 ingredient3)",
+        "(cocktail-part1 cocktail2 ingredient2)",
+        "(cocktail-part1 cocktail3 ingredient1)",
+        "(cocktail-part2 cocktail1 ingredient1)",
+        "(cocktail-part2 cocktail2 ingredient3)",
+        "(cocktail-part2 cocktail3 ingredient2)",
+        "(dispenses dispenser1 ingredient1)",
+        "(dispenses dispenser2 ingredient2)",
+        "(dispenses dispenser3 ingredient3)",
+        "(empty shaker1)",
+        "(empty shot1)",
+        "(empty shot2)",
+        "(empty shot3)",
+        "(empty shot4)",
+        "(holding left shaker1)",
+        "(holding right shot4)",
+        "(next l0 l1)",
+        "(next l1 l2)",
+        "(ontable shot1)",
+        "(ontable shot2)",
+        "(ontable shot3)",
+        "(shaker-empty-level shaker1 l0)",
+        "(shaker-level shaker1 l0)"
     ]
 }
