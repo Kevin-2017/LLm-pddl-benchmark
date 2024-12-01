@@ -11,16 +11,6 @@ import time
 from chat_service import get_chat
 from play_service import (
 	play,
-	forced_reasoning,
-	implicit_knowledge_generation,
-	future_based_reasoning,
-	in_context_learning_case,
-	in_context_learning_experience,
-	reasoning_history,
-	add_state_description,
-	append_user_message,
-	action_prompt,
-	append_assistant_message,
 	create_hook_functions,
 )
 
@@ -194,24 +184,8 @@ def gen_move(player_messages, player_model):
 	return move, content, used_token, action, reason
 
 player1_model_list = [
-	# {
-	# 	"model": "gpt-4o-mini",
-	# 	"prompt_config": [
-	# 		{
-	# 			"name": "forced-reasoning",
-	# 			"params": {
-	# 				"interactive_times": 3,
-	# 				"prompt_messages": [
-	# 					"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
-	# 					"Please reason about the current state again. You should analyze all the opponent's moves and your moves. Explain what you expect will happen in the next few moves.",
-	# 					"Please reason about the current state again. Think hard and analyze the situation with connect four's game strategy"
-	# 				]
-	# 			}
-	# 		}
-	# 	]
-	# },
 	{
-		"model": "ollama-qwen2.5-coder:latest",
+		"model": "o1-mini-2024-09-12",
 		"prompt_config": [
 			{
 				"name": "forced-reasoning",
@@ -225,7 +199,7 @@ player1_model_list = [
 		],
 	},
 	{
-		"model": "ollama-mistral:latest",
+		"model": "o1-mini-2024-09-12",
 		"prompt_config": [
 			{
 				"name": "forced-reasoning",
@@ -239,7 +213,7 @@ player1_model_list = [
 		],
 	},
 	{
-		"model": "ollama-llama3.2:latest",
+		"model": "o1-mini-2024-09-12",
 		"prompt_config": [
 			{
 				"name": "forced-reasoning",
@@ -253,7 +227,7 @@ player1_model_list = [
 		],
 	},
 	{
-		"model": "gpt-4o",
+		"model": "o1-mini-2024-09-12",
 		"prompt_config": [
 			{
 				"name": "forced-reasoning",
@@ -267,7 +241,7 @@ player1_model_list = [
 		],
 	},
 	{
-		"model": "gpt-4-turbo",
+		"model": "o1-mini-2024-09-12",
 		"prompt_config": [
 			{
 				"name": "forced-reasoning",
@@ -281,7 +255,7 @@ player1_model_list = [
 		],
 	},
 	{
-		"model": "gpt-3.5-turbo",
+		"model": "o1-mini-2024-09-12",
 		"prompt_config": [
 			{
 				"name": "forced-reasoning",
@@ -294,45 +268,295 @@ player1_model_list = [
 			}
 		],
 	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	}
 ]
 player2_model_list = [
 	{
-		"model": "ollama-qwen2.5-coder:latest",
-		"prompt_config": [],
-	},
-	{
-		"model": "ollama-mistral:latest",
-		"prompt_config": [],
-	},
-	{
-		"model": "ollama-llama3.2:latest",
-		"prompt_config": [],
-	},
-	{
 		"model": "gpt-4o",
-		"prompt_config": [],
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "gpt-4o-mini",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
 	},
 	{
 		"model": "gpt-4-turbo",
-		"prompt_config": [],
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
 	},
 	{
 		"model": "gpt-3.5-turbo",
-		"prompt_config": [],
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "claude-3-5-sonnet-20241022",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "claude-3-5-haiku-20241022",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "ollama-qwen2.5:72b",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "ollama-llama3.1:70b",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "ollama-llama3:70b-instruct",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "ollama-llama3.2:3b",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "ollama-mistral:latest",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "o1-preview-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
+	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+		],
 	},
 ]
 
 print(len(player1_model_list))
 print(len(player2_model_list))
+for i in range(len(player1_model_list)):
+	print(player1_model_list[i]["model"], "vs", player2_model_list[i]["model"])
+	
 assert len(player1_model_list) == len(player2_model_list)
 
 for model_index in range(len(player1_model_list)):
-	for game_index in range(6):
+	for game_index in range(10):
 		player1_model = player1_model_list[model_index]
 		player2_model = player2_model_list[model_index]
 		player1_model_name = player1_model["model"]
 		player2_model_name = player2_model["model"]
-		if game_index < 3:
+		if game_index < 5:
 			pass
 		else:
 			temp = player1_model
@@ -457,8 +681,8 @@ for model_index in range(len(player1_model_list)):
 				break
 		env.close()
 
-		player1_model_save_name = player1_model_name + "-".join([i["name"] for i in player1_model["prompt_config"]])
-		player2_model_save_name = player2_model_name + "-".join([i["name"] for i in player2_model["prompt_config"]])
+		player1_model_save_name = player1_model_name + "-" + "-".join([i["name"] for i in player1_model["prompt_config"]])
+		player2_model_save_name = player2_model_name + "-" + "-".join([i["name"] for i in player2_model["prompt_config"]])
 		# save the chat log for two players
 		with open(f"cf_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
 			json.dump({

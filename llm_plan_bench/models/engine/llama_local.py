@@ -5,6 +5,7 @@ import torch
 from typing import List, Union
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from .base import EngineLM, CachedEngine
+from transformers import pipeline
 
 class ChatLocalLLM(EngineLM, CachedEngine):
     DEFAULT_SYSTEM_PROMPT = "You are a helpful, creative, and smart assistant."
@@ -31,6 +32,7 @@ class ChatLocalLLM(EngineLM, CachedEngine):
             use_flash_attention_2=True,
             trust_remote_code=True
         )
+        self.pipe = pipeline("text-generation", model=self.model_string, device_map='cuda')
 
         self.model.to(self.device)
         self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -65,7 +67,12 @@ class ChatLocalLLM(EngineLM, CachedEngine):
         #     {"role": "user", "content": "Hi, my name is Albert"},
         #     {"role": "assistant", "content": "Hello Albert, how can I help you today?"},
         # ]
-        raise NotImplementedError("History generation is not yet supported for local models.")
+        return self.pipe(
+            history,
+            max_length=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+        )[0]['generated_text'][-1]["content"]
 
     def _generate_response(
         self,

@@ -3,52 +3,38 @@ from openai import OpenAI
 import os
 import re
 import json
-json_pattern = re.compile(r"(\{(.|\n)*\})")
-client = OpenAI(
-	api_key=os.environ["OPENAI_API_KEY"],
+import regex
+from chat_service import get_chat
+from play_service import (
+	play,
+	create_hook_functions,
 )
+# Regex pattern for recursive matching
+json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}', regex.DOTALL)
 
-first_player_initial_prompt = """
-You are playing a game of Tic-Tac-Toe against an opponent. Tic-tac-toe is a simple turn based strategy game where 2 players, X and O, take turns marking spaces on a 3 x 3 grid. The first player to place 3 of their marks in a horizontal, vertical, or diagonal line is the winner. Taking an illegal move ends the game and the player who made the illegal move loses.
-The board is a 3x3 grid, and you are playing as 'X'. The opponent is playing as 'O'. The board is indexed as follows:
-Action Space: 
-Each action from 0 to 8 represents placing either an X or O in the corresponding cell. The cells are indexed as follows:
+def generate_action_prompt(legal_moves):
+	action_prompt = """
 
-0 | 3 | 6
-_________
+	0 | 3 | 6
+	_________
 
-1 | 4 | 7
-_________
+	1 | 4 | 7
+	_________
 
-2 | 5 | 8
-"""
+	2 | 5 | 8
 
-second_player_initial_prompt = """
-You are playing a game of Tic-Tac-Toe against an opponent. Tic-tac-toe is a simple turn based strategy game where 2 players, X and O, take turns marking spaces on a 3 x 3 grid. The first player to place 3 of their marks in a horizontal, vertical, or diagonal line is the winner.
-The board is a 3x3 grid, and you are playing as 'O'. The opponent is playing as 'X'. The board is indexed as follows:
-Action Space: 
-Each action from 0 to 8 represents placing either an X or O in the corresponding cell. The cells are indexed as follows:
+	Now it's your move. Please enter the index of the cell where you would like to place your mark (0-8), you should enter a number between 0 and 8 based on the cell index shown above. You should serialize the output to a json object with the key "reason" and the value string as the detailed reasoning or planning for your action, and the key "action" and the value as the index of the cell where you would like to place your mark.
+	"""
+	return action_prompt + f"\nLegal moves: {legal_moves} You must select one legal move from this list. You have to win.\n"
 
-0 | 3 | 6
-_________
-
-1 | 4 | 7
-_________
-
-2 | 5 | 8
-"""
-
-action_prompt = """
-
-0 | 3 | 6
-_________
-
-1 | 4 | 7
-_________
-
-2 | 5 | 8
-
-Now it's your move. Please enter the index of the cell where you would like to place your mark (0-8), you should enter a number between 0 and 8 based on the cell index shown above. You should serialize the output to a json object with the key "action" and the value as the index of the cell where you would like to place your mark.
+def generate_reasoning_prompt(player_reasoning_action_steps):
+	li = [f"Move: {step['action']}\nReason: {step['reason']}" for step in player_reasoning_action_steps[-3:]]
+	steps = "\n---------------------------\n".join(li)
+	return f"""
+Your previous moves and thinking are below  (in the last 3 moves in the order of the oldest to the newest):
+<previous_moves>
+{steps}
+</previous_moves>
 """
 
 def parse_observation(observation_dict, agent):
@@ -84,6 +70,7 @@ def parse_observation(observation_dict, agent):
 
 	# Convert the action mask into text description of legal actions
 	legal_moves = [i for i, is_legal in enumerate(action_mask) if is_legal == 1]
+	legal_moves_list = legal_moves.copy()
 	legal_moves_description = f"Legal moves: {', '.join(map(str, legal_moves))}" if legal_moves else "No legal moves available."
 
 	# Create the final description
@@ -92,131 +79,236 @@ def parse_observation(observation_dict, agent):
 				  f"Board state:\n{board_description}\n" \
 				  f"{legal_moves_description}"
 	
-	return f"Board state:\n{board_description}\n", f"{legal_moves_description}\n"
+	return f"Board state:\n{board_description}\n", f"{legal_moves_description}\n", legal_moves_list
 
-first_player_messages = [
+def gen_move(player_messages, player_model):
+	content, used_token = get_chat(player_model, player_messages)
+	try:
+		matches = json_pattern.findall(content)
+		for match in matches:
+			try:
+				parsed_json = json.loads(match)
+				print("Valid JSON Found:", parsed_json)
+			except Exception as e:
+				print("Invalid JSON Found:", match)
+		action = parsed_json["action"]
+		reason = parsed_json["reason"]
+		move = action
+	except Exception as e:
+		print(e)
+		move = None
+		action = None
+		reason = None
+	return move, content, used_token, action, reason
+
+player1_model_list = [
 	{
-		"role": "user",
-		"content": first_player_initial_prompt,
+		"model": "meta-llama/Llama-3.1-70B-Instruct",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
 	},
+]
+player2_model_list = [
 	{
-		"role": "assistant",
-		"content": "Sure, let's start. "
-	},
-] 
-second_player_messages = [
-	{
-		"role": "user",
-		"content": second_player_initial_prompt,
-	},
-	{
-		"role": "assistant",
-		"content": "Sure, let's start. "
+		"model": "gpt-4o-mini",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+					]
+				}
+			}
+		],
 	},
 ]
 
-env = tictactoe_v3.env(render_mode=None)
-env.reset(seed=42)
-cnt = 0
-win = None # 0 is player1, 1 is player2, 2 is Draw, 3 is player1 illegal move, 4 is player2 illegal move
-total_tokens = 0
-player1_model = "gpt-4o-mini"
-player2_model = "gpt-4o"
-game_log = []
-for agent in env.agent_iter():
-	cnt += 1
-	observation, reward, termination, truncation, info = env.last()
-	board_state, legal_moves = parse_observation(observation, agent)
-	print(board_state)
-	rewards = env.rewards
-	print(rewards)
-	if win == None:
-		if len(list(rewards.keys())) == 1 and rewards[list(rewards.keys())[0]] == 0:
-			print("Draw!")
-			win = 2
-		elif rewards["player_1"] == 1 and rewards["player_2"] == 1:
-			print("Draw!")
-			win = 2
-		elif rewards["player_1"] == 1 and rewards["player_2"] == -1:
-			print("Player 1 wins!")
-			win = 0
-		elif rewards["player_1"] == -1 and rewards["player_2"] == 1:
-			print("Player 2 wins!")
-			win = 1
-		elif rewards["player_1"] == -1 and rewards["player_2"] == 0:
-			print("Player 1 illegal move!")
-			win = 3
-		elif rewards["player_1"] == 0 and rewards["player_2"] == -1:
-			print("Player 2 illegal move!")
-			win = 4
-	if termination or truncation:
-		action = None
-	else:
-		if agent == 'player_1':
-			# first_player
-			first_player_messages.append({
-				"role": "user", 
-				"content": "Your opponent has made the move, and now the board state is: \n" + board_state + legal_moves + action_prompt
-			})
-			chat_completion = client.chat.completions.create(
-				messages=first_player_messages,
-				model=player1_model,
-			)
-			first_player_messages.append({
-				"role": "assistant",
-				"content": chat_completion.choices[0].message.content
-			})
-			total_tokens += chat_completion.usage.to_dict()["total_tokens"]
-			action = json.loads(re.search(json_pattern, chat_completion.choices[0].message.content).group())["action"]
-			print("Action is ", action)
-		elif agent == 'player_2':
-			# second_player
-			second_player_messages.append({
-				"role": "user", 
-				"content": "Your opponent has made the move, and now the board state is: \n" + board_state + legal_moves + action_prompt
-			})
-			chat_completion = client.chat.completions.create(
-				messages=second_player_messages,
-				model=player2_model,
-			)
-			second_player_messages.append({
-				"role": "assistant",
-				"content": chat_completion.choices[0].message.content
-			})
-			total_tokens += chat_completion.usage.to_dict()["total_tokens"]
-			action = json.loads(re.search(json_pattern, chat_completion.choices[0].message.content).group())["action"]
-			print("Action is ", action)
-	game_log.append({
-		"agent": agent,
-		"action": action,
-		"observation": observation["observation"].tolist(),
-		"reward": env.rewards,
-		"action_mask": observation["action_mask"].tolist(),
-	})
-	env.step(action)
-env.close()
 
-# save the chat log for two players
-with open("ttt_chat_log.json", "w") as f:
-	json.dump({
-		"status": {
-			0: "Player 1 wins!",
-			1: "Player 2 wins!",
-			2: "Draw!",
-			3: "Player 1 illegal move!",
-			4: "Player 2 illegal move!",
-		}[win],
-		"winner": {
-			0: "Player 1",
-			1: "Player 2",
-			2: "Draw",
-			3: "Player 2",
-			4: "Player 1",
-		}[win],
-		"player1_model": player1_model,
-		"player2_model": player2_model,
-		"total_tokens": total_tokens,
-		"game_log": game_log,
-		"first_player_messages": first_player_messages,
-		"second_player_messages": second_player_messages,
-	}, f, indent=4)
+print(len(player1_model_list), len(player2_model_list))
+for i in range(len(player1_model_list)):
+	print(player1_model_list[i]["model"], "vs", player2_model_list[i]["model"])
+	
+assert len(player1_model_list) == len(player2_model_list)
+
+for model_index in range(len(player1_model_list)):
+	for game_index in range(2):
+		player1_model = player1_model_list[model_index]
+		player2_model = player2_model_list[model_index]
+		player1_model_name = player1_model["model"]
+		player2_model_name = player2_model["model"]
+		if game_index < 1:
+			pass
+		else:
+			temp = player1_model
+			player1_model = player2_model
+			player2_model = temp
+			temp = player1_model_name
+			player1_model_name = player2_model_name
+			player2_model_name = temp
+
+
+
+		first_player_initial_prompt = """
+		You are playing a game of Tic-Tac-Toe against an opponent. Tic-tac-toe is a simple turn based strategy game where 2 players, X and O, take turns marking spaces on a 3 x 3 grid. The first player to place 3 of their marks in a horizontal, vertical, or diagonal line is the winner. Taking an illegal move ends the game and the player who made the illegal move loses.
+		The board is a 3x3 grid, and you are playing as 'X'. The opponent is playing as 'O'. The board is indexed as follows:
+		Action Space: 
+		Each action from 0 to 8 represents placing either an X or O in the corresponding cell. The cells are indexed as follows:
+
+		0 | 3 | 6
+		_________
+
+		1 | 4 | 7
+		_________
+
+		2 | 5 | 8
+		"""
+
+		second_player_initial_prompt = """
+		You are playing a game of Tic-Tac-Toe against an opponent. Tic-tac-toe is a simple turn based strategy game where 2 players, X and O, take turns marking spaces on a 3 x 3 grid. The first player to place 3 of their marks in a horizontal, vertical, or diagonal line is the winner.
+		The board is a 3x3 grid, and you are playing as 'O'. The opponent is playing as 'X'. The board is indexed as follows:
+		Action Space: 
+		Each action from 0 to 8 represents placing either an X or O in the corresponding cell. The cells are indexed as follows:
+
+		0 | 3 | 6
+		_________
+
+		1 | 4 | 7
+		_________
+
+		2 | 5 | 8
+		"""
+
+
+		first_player_messages = [
+			{
+				"role": "user",
+				"content": first_player_initial_prompt,
+			},
+			{
+				"role": "assistant",
+				"content": "Sure, let's start. "
+			},
+		] 
+		second_player_messages = [
+			{
+				"role": "user",
+				"content": second_player_initial_prompt,
+			},
+			{
+				"role": "assistant",
+				"content": "Sure, let's start. "
+			},
+		]
+
+		first_player_reasoning_action_steps = []
+		second_player_reasoning_action_steps = []
+
+		first_player_store_message = first_player_messages.copy()
+		second_player_store_message = second_player_messages.copy()
+
+		env = tictactoe_v3.env(render_mode=None)
+		env.reset(seed=42)
+		cnt = 0
+		win = None # 0 is player1, 1 is player2, 2 is Draw, 3 is player1 illegal move, 4 is player2 illegal move
+		total_tokens = 0
+		game_log = []
+		for agent in env.agent_iter():
+			hook_functions = {}
+			cnt += 1
+			observation, reward, termination, truncation, info = env.last()
+			board_state, legal_moves, legal_moves_list = parse_observation(observation, agent)
+			print(board_state)
+			rewards = env.rewards
+			print(rewards)
+			if win != None:
+				break
+			if win == None:
+				if len(list(rewards.keys())) == 1 and rewards[list(rewards.keys())[0]] == 0:
+					print("Draw!")
+					win = 2
+				elif rewards["player_1"] == 1 and rewards["player_2"] == 1:
+					print("Draw!")
+					win = 2
+				elif rewards["player_1"] == 1 and rewards["player_2"] == -1:
+					print("Player 1 wins!")
+					win = 0
+				elif rewards["player_1"] == -1 and rewards["player_2"] == 1:
+					print("Player 2 wins!")
+					win = 1
+				elif rewards["player_1"] == -1 and rewards["player_2"] == 0:
+					print("Player 1 illegal move!")
+					win = 3
+				elif rewards["player_1"] == 0 and rewards["player_2"] == -1:
+					print("Player 2 illegal move!")
+					win = 4
+			illegal_tolerance = 10
+			if termination or truncation:
+				action = None
+			else:
+				if agent == 'player_1':
+					# first_player
+					first_player_messages = first_player_messages[:2]
+					hook_functions = create_hook_functions(player1_model, first_player_reasoning_action_steps, board_state, generate_action_prompt(legal_moves))
+					move, action, win, game_state, added_tokens = play(first_player_messages, first_player_store_message, player1_model_name, first_player_reasoning_action_steps, board_state, legal_moves, legal_moves_list, gen_move, illegal_tolerance, True, hook_functions)
+					total_tokens += added_tokens
+				elif agent == 'player_2':
+					# second_player
+					second_player_messages = second_player_messages[:2]
+					hook_functions = create_hook_functions(player2_model, second_player_reasoning_action_steps, board_state, generate_action_prompt(legal_moves))
+					move, action, win, game_state, added_tokens = play(second_player_messages, second_player_store_message, player2_model_name, second_player_reasoning_action_steps, board_state, legal_moves, legal_moves_list, gen_move, illegal_tolerance, True, hook_functions)
+					total_tokens += added_tokens
+			game_log.append({
+				"agent": agent,
+				"action": action,
+				"observation": observation["observation"].tolist(),
+				"reward": env.rewards,
+				"action_mask": observation["action_mask"].tolist(),
+			})
+			try:
+				env.step(action)
+			except Exception as e:
+				print(e)
+				break
+		env.close()
+
+		player1_model_save_name = player1_model_name + "-" + "-".join([i["name"] for i in player1_model["prompt_config"]])
+		player2_model_save_name = player2_model_name + "-" + "-".join([i["name"] for i in player2_model["prompt_config"]])
+
+
+		# save the chat log for two players
+		with open(f"ttt_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
+			json.dump({
+				"status": {
+					0: "Player 1 wins!",
+					1: "Player 2 wins!",
+					2: "Draw!",
+					3: "Player 1 illegal move!",
+					4: "Player 2 illegal move!",
+				}[win],
+				"winner": {
+					0: "Player 1",
+					1: "Player 2",
+					2: "Draw",
+					3: "Player 2",
+					4: "Player 1",
+				}[win],
+				"player1_model": player1_model,
+				"player2_model": player2_model,
+				"total_tokens": total_tokens,
+				"illegal_tolerance": illegal_tolerance,
+				"number_of_requests": len(game_log)/2,
+				"first_player_messages": first_player_store_message,
+				"second_player_messages": second_player_store_message,
+				"game_log": game_log,
+			}, f, indent=4)
