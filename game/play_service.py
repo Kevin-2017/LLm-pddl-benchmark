@@ -31,7 +31,7 @@ from chat_service import get_chat
 # 	}
 # ]
 
-def play(player_messages, player_store_message, player_model, player_reasoning_action_steps, state_description, legal_move_description, legal_moves, gen_move=None, illegal_tolerance=10,print_content=True, hook_functions=None):
+def play(player_messages, player_store_message, player_model, player_reasoning_action_steps, state_description, legal_move_description, legal_moves, gen_move=None, illegal_tolerance=10,print_content=True, hook_functions=None,player_index=None):
     # in hook_functions, key is the function, and the value is the additional arguments
     win = None
     game_state = None
@@ -58,7 +58,10 @@ def play(player_messages, player_store_message, player_model, player_reasoning_a
     })
     if move not in legal_moves or move == None:
         print("Player", player_model, "exceeded illegal move tolerance")
-        win = 3
+        if player_index == 0:
+            win = 3
+        elif player_index == 1:
+            win = 4
         game_state = "Player " + player_model + " illegal move!"
     else:
         player_reasoning_action_steps.append({
@@ -73,6 +76,15 @@ def forced_reasoning(player_messages=None, player_store_message=None, player_mod
     for i in range(interactive_times):
         append_user_message(player_messages, player_store_message, prompt_messages[i])
         content, used_token = get_chat(player_model, player_messages)
+        append_assistant_message(player_messages, player_store_message, content)
+
+def prompting_code(player_messages=None, player_store_message=None, player_model=None, interactive_times=None, prompt_messages=None):
+    # user prompting the assistant to generate code
+    assert len(prompt_messages) == interactive_times, "Prompt messages should be the same as the interactive times"
+    for i in range(interactive_times):
+        append_user_message(player_messages, player_store_message, prompt_messages[i])
+        content, used_token = get_chat(player_model, player_messages)
+        print(content)
         append_assistant_message(player_messages, player_store_message, content)
 
 def implicit_knowledge_generation(player_messages=None, player_store_message=None, player_model=None, interactive_times=None, prompt_messages=None):
@@ -170,6 +182,11 @@ def create_hook_functions(model, player_reasoning_action_steps, state_descriptio
     if "forced-reasoning" in prompt_dict.keys():
         hook_functions[forced_reasoning] = { "interactive_times": prompt_dict["forced-reasoning"]["interactive_times"], "prompt_messages": prompt_dict["forced-reasoning"]["prompt_messages"] }
 
+    if "prompting-code" in prompt_dict.keys():
+        hook_functions[prompting_code] = { "interactive_times": prompt_dict["prompting-code"]["interactive_times"], "prompt_messages": prompt_dict["prompting-code"]["prompt_messages"] }
+
+    # necessary
+    hook_functions[add_state_description] = { "state_description": state_description }
     # necessary
     hook_functions[action_prompt] = { "action_prompt": action_prompt_text }
 

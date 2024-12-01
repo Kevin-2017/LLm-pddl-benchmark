@@ -86,7 +86,7 @@ By the same token, if you play Connect 4 online against a computer, then you wil
 
 def generate_action_prompt(legal_moves):
 	action_prompt = f"""
-Now it's your move. Please enter the index of the column where you would like to place your token (0-6 from left to right), except the illegal position. You should serialize the output to a json object with the key "reason" and the value str as the detailed reasoning or planning for your action, and the key "action" and the value as the index of the column where you would like to place your token. The legal moves are: \n<legal_moves>\n{" ".join([str(move) for move in legal_moves])}\n</legal_moves>\n You must select one legal move from this list. You have to win.
+Now it's your move. Please enter the index of the column where you would like to place your token (0-6 from left to right), except the illegal position. You should serialize the output to a json object with the key "reason" and the value str as the detailed reasoning or planning for your action, and the key "action" and the value as the index of the column where you would like to place your token. The legal moves are: \n<legal_moves>\n{" ".join([str(move) for move in legal_moves])}\n</legal_moves>\n You must select one legal move from this list. You have to win.  Your output should be {{'reason': string, 'action': index}}, and you can only use json valid characters.
 """
 	return action_prompt
 
@@ -166,6 +166,7 @@ O tokens are at places: {O_places}
 def gen_move(player_messages, player_model):
 	content, used_token = get_chat(player_model, player_messages)
 	try:
+		parsed_json = None
 		matches = json_pattern.findall(content)
 		for match in matches:
 			try:
@@ -192,7 +193,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -206,7 +207,22 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
+					]
+				}
+				
+			}
+		],
+	},
+	{
+		"model": "o1-mini-2024-09-12",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -220,7 +236,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -234,7 +250,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -248,7 +264,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -262,7 +278,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -276,7 +292,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -290,7 +306,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -304,7 +320,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -318,7 +334,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -332,7 +348,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -346,21 +362,7 @@ player1_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
-					]
-				}
-			}
-		],
-	},
-	{
-		"model": "o1-mini-2024-09-12",
-		"prompt_config": [
-			{
-				"name": "forced-reasoning",
-				"params": {
-					"interactive_times": 1,
-					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -376,7 +378,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -390,7 +392,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -404,7 +406,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -418,7 +420,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -432,7 +434,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -446,7 +448,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -460,7 +462,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -474,7 +476,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -488,7 +490,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -502,7 +504,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -516,7 +518,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -530,7 +532,7 @@ player2_model_list = [
 				"params": {
 					"interactive_times": 1,
 					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.",
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
 					]
 				}
 			}
@@ -660,12 +662,12 @@ for model_index in range(len(player1_model_list)):
 				if agent == 'player_0':
 					first_player_messages = first_player_messages[:2]
 					hook_functions = create_hook_functions(player1_model, first_player_reasoning_action_steps, "Your opponent has made the move, and now the state is: \n" + grid_description + "\n", generate_action_prompt(legal_moves))
-					move, action, win, game_state, added_tokens = play(first_player_messages, first_player_store_message, player1_model_name, first_player_reasoning_action_steps, grid_description, legal_moves_description, legal_moves, gen_move, illegal_tolerance,True, hook_functions)
+					move, action, win, game_state, added_tokens = play(first_player_messages, first_player_store_message, player1_model_name, first_player_reasoning_action_steps, grid_description, legal_moves_description, legal_moves, gen_move, illegal_tolerance,True, hook_functions,0)
 					total_tokens += added_tokens
 				elif agent == 'player_1':
 					second_player_messages = second_player_messages[:2]
 					hook_functions = create_hook_functions(player2_model, second_player_reasoning_action_steps, "Your opponent has made the move, and now the state is: \n" + grid_description + "\n", generate_action_prompt(legal_moves))
-					move, action, win, game_state, added_tokens = play(second_player_messages, second_player_store_message, player2_model_name, second_player_reasoning_action_steps, grid_description, legal_moves_description, legal_moves, gen_move, illegal_tolerance,True, hook_functions)
+					move, action, win, game_state, added_tokens = play(second_player_messages, second_player_store_message, player2_model_name, second_player_reasoning_action_steps, grid_description, legal_moves_description, legal_moves, gen_move, illegal_tolerance,True, hook_functions,1)
 					total_tokens += added_tokens
 			game_log.append({
 				"agent": agent,
@@ -683,6 +685,9 @@ for model_index in range(len(player1_model_list)):
 
 		player1_model_save_name = player1_model_name + "-" + "-".join([i["name"] for i in player1_model["prompt_config"]])
 		player2_model_save_name = player2_model_name + "-" + "-".join([i["name"] for i in player2_model["prompt_config"]])
+		player1_model_save_name = player1_model_save_name.replace("/", "_")
+		player2_model_save_name = player2_model_save_name.replace("/", "_")
+		print(player1_model_save_name, player2_model_save_name)
 		# save the chat log for two players
 		with open(f"cf_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
 			json.dump({
@@ -705,7 +710,7 @@ for model_index in range(len(player1_model_list)):
 				"total_tokens": total_tokens,
 				"illegal_tolerance": illegal_tolerance,
 				"number_of_requests": len(game_log)/2,
+				"game_log": game_log,
 				"first_player_messages": first_player_store_message,
 				"second_player_messages": second_player_store_message,
-				"game_log": game_log,
 			}, f, indent=4)

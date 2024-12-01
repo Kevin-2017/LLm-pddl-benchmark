@@ -4,15 +4,17 @@ import os
 import random
 import re
 from stockfish import Stockfish
+import regex
+# Regex pattern for recursive matching
+json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}', regex.DOTALL)
 import json
-import google.generativeai as genai
 import anthropic
 import time
 from chat_service import get_chat
-from play_service import play
-
-json_pattern = re.compile(r"(\{(.|\n)*\})")
-stockfish = Stockfish("/opt/homebrew/bin/stockfish")
+from play_service import (
+	play,
+	create_hook_functions,
+)
 
 
 def transform_to_uci(board, s):
@@ -74,7 +76,7 @@ def format_board(board_str):
 
 def generate_action_prompt(legal_moves):
 			return f"""
-	Please enter your move in Universal Chess Interface (UCI) format. For example, to move a pawn from e2 to e4, you would enter \"e2e4\". You should state your reason first, and serialize the output to a json object with the key "reason" and the value as a string of your reasoning and planning process, the key "action" and the value as a UCI string representing your move. The legal moves are: \n<legal_moves>\n{" ".join(legal_moves)}\n</legal_moves>\n You must select one legal move from this list and respond with the UCI format of the move you choose. Do not generate any move outside of this list. You have to win. In your reason and action, you can only use UCI format to describe.
+	Please enter your move in Universal Chess Interface (UCI) format. For example, to move a pawn from e2 to e4, you would enter \"e2e4\". You should state your reason first, and serialize the output to a json object with the key "reason" and the value as a string of your reasoning and planning process, the key "action" and the value as a UCI string representing your move. The legal moves are: \n<legal_moves>\n{" ".join(legal_moves)}\n</legal_moves>\n You must select one legal move from this list and respond with the UCI format of the move you choose. Do not generate any move outside of this list. You have to win. In your reason and action, you can only use UCI format to describe. Your output should be in this format: {{'reason': string, 'action': string}}, and you can only use json valid characters.
 	"""
 
 def generate_reasoning_prompt(player_reasoning_action_steps):
@@ -89,80 +91,82 @@ def generate_reasoning_prompt(player_reasoning_action_steps):
 	Comment on your current tactics so you know your plan for the next move.
 	"""
 
-def gen_move(player_messages, player_store_message, player_model, player_reasoning_action_steps, board, legal_move_description, legal_moves, truncate=True):
-	if truncate == True:
-		player_messages = player_messages[:2]
-	else:
-		print("Not truncated")
-	player_messages.append({
-		"role": "user",
-		"content": generate_reasoning_prompt(player_reasoning_action_steps) + "\nPlease look at the current board state represented by asci and FEN and make your next move:\n <FEN>\nFEN: " + board.fen() +  "\n</FEN>\n\n<board_state>\n\n2D board: \n" + format_board(str(board)) + "\n</board_state>\n\n" + generate_action_prompt([move.uci() for move in board.legal_moves])
-	})
-	player_store_message.append({
-		"role": "user",
-		"content": generate_reasoning_prompt(player_reasoning_action_steps) + "\nPlease look at the current board state represented by asci and FEN and make your next move:\n <FEN>\nFEN: " + board.fen() +  "\n</FEN>\n\n<board_state>\n\n2D board: \n" + format_board(str(board)) + "\n</board_state>\n\n" + generate_action_prompt([move.uci() for move in board.legal_moves])
-	})
+def gen_move(player_messages, player_model):
 	content, used_token = get_chat(player_model, player_messages)
 	try:
-		action = json.loads(re.search(json_pattern, content).group())["action"]
-		reason = json.loads(re.search(json_pattern, content).group())["reason"]
-		move = get_move(board, action)
-	except:
+		matches = json_pattern.findall(content)
+		for match in matches:
+			try:
+				parsed_json = json.loads(match)
+				print("Valid JSON Found:", parsed_json)
+			except Exception as e:
+				print("Invalid JSON Found:", match)
+		action = parsed_json["action"]
+		reason = parsed_json["reason"]
+		try:
+			move = chess.Move.from_uci(action)
+		except:
+			move = None
+	except Exception as e:
+		print(e)
 		move = None
+		action = None
+		reason = None
 	return move, content, used_token, action, reason
 
-def warm_up(player_messages, player_store_message, player_model, player_reasoning_action_steps, board):
-	# in the warm up period, 
-	pass
-
-
 player1_model_list = [
-	# "gemini-1.5-flash",
-	# "gemini-1.5-flash",
-	# "gemini-1.5-flash",
-	# "gemini-1.5-flash",
-	# "gemini-1.5-flash",
-	# "gemini-1.5-flash",
-	# "claude-3-5-sonnet-20241022",
-	# "claude-3-5-sonnet-20241022",
-	# "claude-3-5-sonnet-20241022",
-	# "claude-3-5-haiku-20241022",
-	# "claude-3-5-haiku-20241022",
-	# "claude-3-5-haiku-20241022",
-	# "claude-3-5-haiku-20241022",
-	# "gpt-4o",
-	"gpt-4-turbo",
+	{
+		"model": "gpt-4o-mini",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.  Only need to plan and reason now, no need to make move at this stage.",
+					]
+				}
+			}
+		],
+	},
 ]
 player2_model_list = [
-	# "gpt-4o",
-	# "gpt-4o-mini",
-	# "gpt-4-turbo",
-	# "gpt-3.5-turbo",
-	# "claude-3-5-sonnet-20241022",
-	# "claude-3-5-haiku-20241022",
-	# "gpt-4o-mini",
-	# "gpt-4-turbo",
-	# "gpt-3.5-turbo",
-	# "gpt-4o",
-	# "gpt-4o-mini",
-	# "gpt-4-turbo",
-	# "gpt-3.5-turbo",
-	# "gpt-4o-mini"
-	"gpt-3.5-turbo",
+	{
+		"model": "gpt-4o-mini",
+		"prompt_config": [
+			{
+				"name": "forced-reasoning",
+				"params": {
+					"interactive_times": 1,
+					"prompt_messages": [
+						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
+					]
+				}
+			}
+		],
+	},
 ]
-
+print(len(player1_model_list))
+print(len(player2_model_list))
+for i in range(len(player1_model_list)):
+	print(player1_model_list[i]["model"], "vs", player2_model_list[i]["model"])
 assert len(player1_model_list) == len(player2_model_list)
 
 for model_index in range(len(player1_model_list)):
-	for game_index in range(4):
+	for game_index in range(8):
 		player1_model = player1_model_list[model_index]
 		player2_model = player2_model_list[model_index]
-		if game_index < 2:
+		player1_model_name = player1_model["model"]
+		player2_model_name = player2_model["model"]
+		if game_index < 4:
 			pass
 		else:
 			temp = player1_model
 			player1_model = player2_model
 			player2_model = temp
+			temp = player1_model_name
+			player1_model_name = player2_model_name
+			player2_model_name = temp
 
 		first_player_initial_prompt = f"""
 	You are playing a text game of Chess against an opponent. Chess is a two-player strategy board game played on an 8x8 board. The goal of the game is to checkmate the opponent's king. On the board, your pieces are represented by uppercase letters and the opponent's pieces are represented by lowercase letters. You are a chest master playing a text based game of chess.
@@ -210,6 +214,7 @@ for model_index in range(len(player1_model_list)):
 		game_log = []
 		game_state = None
 		while True:
+			hook_functions = {}
 			outcome = board.outcome()
 			print(board)
 			if outcome != None:
@@ -231,27 +236,38 @@ for model_index in range(len(player1_model_list)):
 			legal_moves = board.legal_moves
 			illegal_tolerance = 10
 			if turn == True: # white
-				move, action, win, game_state, added_tokens = play(first_player_messages, first_player_store_message, player1_model, first_player_reasoning_action_steps, board, "", legal_moves, gen_move,illegal_tolerance)
+				first_player_messages = first_player_messages[:2]
+				hook_functions = create_hook_functions(player1_model, first_player_reasoning_action_steps, "\nPlease look at the current board state represented by asci and FEN and make your next move:\n <FEN>\nFEN: " + board.fen() +  "\n</FEN>\n\n<board_state>\n\n2D board: \n" + format_board(str(board)) + "\n</board_state>\n\n", generate_action_prompt([move.uci() for move in board.legal_moves]))
+
+				move, action, win, game_state, added_tokens = play(first_player_messages, first_player_store_message, player1_model_name, first_player_reasoning_action_steps, board, "", legal_moves, gen_move,illegal_tolerance, True, hook_functions,0)
 				total_tokens += added_tokens
-				if win != None:
-					break
 				# action = random.choice(legal_moves)
 				# move = chess.Move.from_uci(action)
 				# reason = "Random move"
 			elif turn == False: # black
-				move, action, win, game_state, added_tokens = play(second_player_messages, second_player_store_message, player2_model, second_player_reasoning_action_steps, board, "", legal_moves, gen_move,illegal_tolerance)
+				second_player_messages = second_player_messages[:2]
+				hook_functions = create_hook_functions(player2_model, second_player_reasoning_action_steps, "\nPlease look at the current board state represented by asci and FEN and make your next move:\n <FEN>\nFEN: " + board.fen() +  "\n</FEN>\n\n<board_state>\n\n2D board: \n" + format_board(str(board)) + "\n</board_state>\n\n", generate_action_prompt([move.uci() for move in board.legal_moves]))
+				move, action, win, game_state, added_tokens = play(second_player_messages, second_player_store_message, player2_model_name, second_player_reasoning_action_steps, board, "", legal_moves, gen_move,illegal_tolerance, False, hook_functions,1)
 				total_tokens += added_tokens
-				if win != None:
-					break
 			game_log.append({
 				"board": board.fen(),
 				"agent": "white" if turn == True else "black",
 				"action": action,
 			})
-			board.push(move)
-
+			if win != None:
+				break
+			try:
+				board.push(move)
+			except Exception as e:
+				print(e)
+				break
+		player1_model_save_name = player1_model_name + "-" + "-".join([i["name"] for i in player1_model["prompt_config"]])
+		player2_model_save_name = player2_model_name + "-" + "-".join([i["name"] for i in player2_model["prompt_config"]])
+		player1_model_save_name = player1_model_save_name.replace("/", "_")
+		player2_model_save_name = player2_model_save_name.replace("/", "_")
+		print(player1_model_save_name, player2_model_save_name)
 		# save the chat log for two players
-		with open(f"chess_log_{game_index}_{player1_model}_{player2_model}.json", "w") as f:
+		with open(f"chess_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
 			json.dump({
 				"status": game_state,
 				"winner": {

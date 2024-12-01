@@ -41,7 +41,7 @@ class ChatOpenAI(EngineLM, CachedEngine):
         """
         root = platformdirs.user_cache_dir("textgrad")
         cache_path = os.path.join(root, f"cache_openai_{model_string}.db")
-
+        
         super().__init__(cache_path=cache_path)
 
         self.system_prompt = system_prompt
