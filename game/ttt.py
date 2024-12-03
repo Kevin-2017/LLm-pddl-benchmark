@@ -1,4 +1,5 @@
 from pettingzoo.classic import tictactoe_v3
+import time
 from openai import OpenAI
 import os
 import re
@@ -104,39 +105,9 @@ def gen_move(player_messages, player_model):
 		reason = None
 	return move, content, used_token, action, reason
 
-player1_model_list = [
-	{
-		"model": "meta-llama/Llama-3.1-70B-Instruct",
-		"prompt_config": [
-			{
-				"name": "forced-reasoning",
-				"params": {
-					"interactive_times": 1,
-					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
-					]
-				}
-			}
-		],
-	},
-]
-player2_model_list = [
-	{
-		"model": "gpt-4o-mini",
-		"prompt_config": [
-			{
-				"name": "forced-reasoning",
-				"params": {
-					"interactive_times": 1,
-					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
-					]
-				}
-			}
-		],
-	},
-]
-
+player_list_json = json.load(open("player-list-ttt-continue.json","r"))
+player1_model_list = player_list_json["player1_model_list"]
+player2_model_list = player_list_json["player2_model_list"]
 
 print(len(player1_model_list), len(player2_model_list))
 for i in range(len(player1_model_list)):
@@ -145,12 +116,12 @@ for i in range(len(player1_model_list)):
 assert len(player1_model_list) == len(player2_model_list)
 
 for model_index in range(len(player1_model_list)):
-	for game_index in range(2):
+	for game_index in range(10):
 		player1_model = player1_model_list[model_index]
 		player2_model = player2_model_list[model_index]
 		player1_model_name = player1_model["model"]
 		player2_model_name = player2_model["model"]
-		if game_index < 1:
+		if game_index < 5:
 			pass
 		else:
 			temp = player1_model
@@ -159,6 +130,17 @@ for model_index in range(len(player1_model_list)):
 			temp = player1_model_name
 			player1_model_name = player2_model_name
 			player2_model_name = temp
+
+		player1_model_save_name = player1_model_name + "-" + "-".join([i["name"] for i in player1_model["prompt_config"]])
+		player2_model_save_name = player2_model_name + "-" + "-".join([i["name"] for i in player2_model["prompt_config"]])
+		player1_model_save_name = player1_model_save_name.replace("/", "_")
+		player2_model_save_name = player2_model_save_name.replace("/", "_")
+		print(player1_model_save_name, player2_model_save_name)
+		filename = f"ttt_archive/ttt_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json"
+		if os.path.exists(filename):
+			print("File exists", filename)
+			time.sleep(1)
+			continue
 
 
 
@@ -292,7 +274,7 @@ for model_index in range(len(player1_model_list)):
 		print(player1_model_save_name, player2_model_save_name)
 
 		# save the chat log for two players
-		with open(f"ttt_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
+		with open(f"ttt_archive/ttt_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
 			json.dump({
 				"status": {
 					0: "Player 1 wins!",

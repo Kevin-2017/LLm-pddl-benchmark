@@ -14,7 +14,7 @@ from play_service import (
 	create_hook_functions,
 )
 
-board_size = 5
+board_size = 6
 komi = 7.5
 # generate text format board index
 def generate_board_index(board_size):
