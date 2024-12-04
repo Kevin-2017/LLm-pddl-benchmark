@@ -1,4 +1,5 @@
 import chess
+import time
 from openai import OpenAI
 import os
 import random
@@ -114,51 +115,24 @@ def gen_move(player_messages, player_model):
 		reason = None
 	return move, content, used_token, action, reason
 
-player1_model_list = [
-	{
-		"model": "gpt-4o-mini",
-		"prompt_config": [
-			{
-				"name": "forced-reasoning",
-				"params": {
-					"interactive_times": 1,
-					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail.  Only need to plan and reason now, no need to make move at this stage.",
-					]
-				}
-			}
-		],
-	},
-]
-player2_model_list = [
-	{
-		"model": "gpt-4o-mini",
-		"prompt_config": [
-			{
-				"name": "forced-reasoning",
-				"params": {
-					"interactive_times": 1,
-					"prompt_messages": [
-						"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage.",
-					]
-				}
-			}
-		],
-	},
-]
+player_list_json = json.load(open("player-list.json","r"))
+player1_model_list = player_list_json["player1_model_list"]
+player2_model_list = player_list_json["player2_model_list"]
+
 print(len(player1_model_list))
 print(len(player2_model_list))
+time.sleep(1)
 for i in range(len(player1_model_list)):
 	print(player1_model_list[i]["model"], "vs", player2_model_list[i]["model"])
 assert len(player1_model_list) == len(player2_model_list)
 
 for model_index in range(len(player1_model_list)):
-	for game_index in range(8):
+	for game_index in range(4):
 		player1_model = player1_model_list[model_index]
 		player2_model = player2_model_list[model_index]
 		player1_model_name = player1_model["model"]
 		player2_model_name = player2_model["model"]
-		if game_index < 4:
+		if game_index < 2:
 			pass
 		else:
 			temp = player1_model
@@ -167,6 +141,18 @@ for model_index in range(len(player1_model_list)):
 			temp = player1_model_name
 			player1_model_name = player2_model_name
 			player2_model_name = temp
+
+		player1_model_save_name = player1_model_name + "-" + "-".join([i["name"] for i in player1_model["prompt_config"]])
+		player2_model_save_name = player2_model_name + "-" + "-".join([i["name"] for i in player2_model["prompt_config"]])
+		player1_model_save_name = player1_model_save_name.replace("/", "_")
+		player2_model_save_name = player2_model_save_name.replace("/", "_")
+		print(player1_model_save_name, player2_model_save_name)
+		filename = f"chess_archive/chess_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json"
+		another_filename = f"chess_archive/chess_{game_index}_{player2_model_save_name}_{player1_model_save_name}.json"
+		if os.path.exists(filename) or os.path.exists(another_filename):
+			print("File exists", filename if os.path.exists(filename) else another_filename)
+			time.sleep(1)
+			continue
 
 		first_player_initial_prompt = f"""
 	You are playing a text game of Chess against an opponent. Chess is a two-player strategy board game played on an 8x8 board. The goal of the game is to checkmate the opponent's king. On the board, your pieces are represented by uppercase letters and the opponent's pieces are represented by lowercase letters. You are a chest master playing a text based game of chess.
@@ -267,7 +253,7 @@ for model_index in range(len(player1_model_list)):
 		player2_model_save_name = player2_model_save_name.replace("/", "_")
 		print(player1_model_save_name, player2_model_save_name)
 		# save the chat log for two players
-		with open(f"chess_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
+		with open(f"chess_archive/chess_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json", "w") as f:
 			json.dump({
 				"status": game_state,
 				"winner": {
