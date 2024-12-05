@@ -6,7 +6,8 @@ import copy
 import time
 sys.path.append(os.path.abspath(".."))
 import llm_plan_bench as lpb
-model_name = "ollama-qwen2.5-coder:32b"
+model_name = "o1-preview-2024-09-12"
+# model_name = "o1-mini-2024-09-12"
 lang = "py.py3"
 max_trial_times = 5
 model = lpb.BlackboxLLM(model_name)
@@ -129,8 +130,9 @@ def parse_feedback_text(rdoc):
 
 total_score = 0
 
+problem_range = [103, 113]
 # for problem_id in range(102, 182):
-for problem_id in range(103, 113):
+for problem_id in range(problem_range[0], problem_range[1]):
 	fetch_url = f"{web_ip}/p/{problem_id}"
 	headers = {
 	"Accept": "application/json"
@@ -158,12 +160,15 @@ for problem_id in range(103, 113):
 	# Chain of Thought, ask as user, ask the bot to generate any useful information, experience, tricks, knowledge related to solving this problem
 	append_user_message(messages, copy.deepcopy(messages), "Please first tell me any related information, experience, tricks, knowledge which is useful for solving this problem. Please explain every knowledge in detail.")
 	content = model(messages)
+	print("reasoning:", content)
 	append_assistant_message(messages, copy.deepcopy(messages), content)
-	append_user_message(messages, copy.deepcopy(messages), f"""Now please explain your solution in detail, and generate the finalized code solution for this problem. I will upload the code to the online judge and then give you the feedback. Please format your response in a json file. The output must be in json format. The first key should be 'explanation', the second key should be 'lang' (compiler specified above in config), and the third key should be 'code'. The value should all be string. Please use the programming language lang = {lang}. Thank you very much! You should generate a whole and complete program that can be compiled and run directly in code.""")
+	append_user_message(messages, copy.deepcopy(messages), f"""Now please generate the finalized code solution for this problem. I will upload the code to the online judge and then give you the feedback. Please format your response in a json file. The output must be in json format. The first key should be 'lang' (compiler specified above in config), and the second key should be 'code'. The value should all be string. Please use the programming language lang = {lang}. Thank you very much! You should generate a whole and complete program that can be compiled and run directly in code. Please generate the correct json format: {{"lang": "your lang", "code": "your code"}}, and all the characters in the json should be json valid characters.""")
 	this_score = 0
 	for trial_times in range(max_trial_times):
 		while True:
 			content = model(messages)
+			print("coding", content)
+			parsed_json = None
 			try:
 				matches = json_pattern.findall(content)
 				for match in matches:
@@ -176,7 +181,7 @@ for problem_id in range(103, 113):
 			except Exception as e:
 				print(e)
 				continue
-			if "explanation" in parsed_json.keys() and "lang" in parsed_json.keys() and "code" in parsed_json.keys():
+			if parsed_json is not None and "lang" in parsed_json.keys() and "code" in parsed_json.keys():
 				break
 		print(content)
 		append_assistant_message(messages, copy.deepcopy(messages), content)
@@ -227,7 +232,7 @@ for problem_id in range(103, 113):
 			break
 		else:
 			append_user_message(messages, copy.deepcopy(messages), feedback_text)
-			append_user_message(messages, copy.deepcopy(messages), f"""Please explain the error in your code and try to fix it. Please format your response in a json file. The output must be in json format. The first key should be 'explanation', the second key should be 'lang' (compiler specified above in config), and the third key should be 'code'. The value should all be string. Please lang = {lang}. Thank you very much! You should generate a whole and complete program that can be compiled and run directly in code.""")
+			append_user_message(messages, copy.deepcopy(messages), f"""Please explain the error in your code and try to fix it. After your analysis, please generate your new coding trial in a json file. The new coding trial must be in json format. The first key should be 'lang' (compiler specified above in config), and the second key should be 'code'. The value should all be string. Please lang = {lang}. Thank you very much! You should generate a whole and complete program that can be compiled and run directly in code. Please generate the correct json format: {{"lang": "your lang", "code": "your code"}}, and all the characters in the json should be json valid characters.""")
 			continue
 	# log
 	print("Finish problem", problem_id)
@@ -244,4 +249,9 @@ for problem_id in range(103, 113):
 print("Finish all problems")
 print("Model:", model_name)
 print("Total score:", total_score)
-
+json.dump({
+	"model_name": model_name,
+	"total_score": total_score,
+	"problem_range": problem_range,
+	"lang": lang,
+}, open(f"total-score-{model_name}-{lang}.json", "w"), ensure_ascii=False, indent=4)

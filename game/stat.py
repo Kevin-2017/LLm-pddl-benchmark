@@ -29,11 +29,12 @@ def format_model_name(model_info):
 
 def process_json_files(input_directory, output_csv):
     # Dictionary to store win statistics
-    win_stats = defaultdict(lambda: {"wins_model1": 0, "wins_model2": 0})
+    win_stats = defaultdict(lambda: {"wins_model1": 0, "wins_model2": 0, "draws": 0})
 
     # Iterate over all files in the directory
     for filename in os.listdir(input_directory):
         if filename.endswith('.json'):
+            print(f"Processing file: {filename}")
             file_path = os.path.join(input_directory, filename)
             with open(file_path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
@@ -54,17 +55,27 @@ def process_json_files(input_directory, output_csv):
                         win_stats[(model1, model2)]["wins_model1"] += 1
                     else:
                         win_stats[(model1, model2)]["wins_model2"] += 1
+                elif winner == "Draw":
+                    win_stats[(model1, model2)]["draws"] += 1
+                else:
+                    print(f"Unknown winner value '{winner}' in file {filename}")
 
     # Write the statistics to a CSV file
     with open(output_csv, 'w', newline='', encoding='utf-8') as csvfile:
         csv_writer = csv.writer(csvfile)
         # Write the header
-        csv_writer.writerow(["Model 1", "Model 2", "Wins (Model 1)", "Wins (Model 2)"])
+        csv_writer.writerow(["Model 1", "Model 2", "Wins (Model 1)", "Wins (Model 2)", "Draws"])
         
         for (model1, model2), stats in win_stats.items():
-            csv_writer.writerow([model1, model2, stats["wins_model1"], stats["wins_model2"]])
+            csv_writer.writerow([
+                model1, 
+                model2, 
+                stats["wins_model1"], 
+                stats["wins_model2"], 
+                stats["draws"]
+            ])
 
 # Example usage
-input_directory = "."  # Replace with your directory containing JSON files
-output_csv = "model_win_stats.csv"
+input_directory = "ttt_archive" 
+output_csv = "ttt_model_win_stats.csv"
 process_json_files(input_directory, output_csv)

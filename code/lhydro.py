@@ -30,7 +30,7 @@ for name in tqdm(all_json_files):
         skip += 1
         continue
     remove_str = title.split(" ")[0] + " "
-    title = title.replace(remove_str, "")
+    title = title.replace(remove_str, "").replace("'", "").replace("\"", "").replace(":", "")
     labels = data['labels']
     tag_list = []
     start = False
@@ -93,8 +93,11 @@ for name in tqdm(all_json_files):
     extract_dir = out_dir + "testdata/"
     if not os.path.exists(extract_dir):
         os.makedirs(extract_dir)
-    with zipfile.ZipFile(testfile, 'r') as zip_ref:
-        zip_ref.extractall(extract_dir)
+    try:
+        with zipfile.ZipFile(testfile, 'r') as zip_ref:
+            zip_ref.extractall(extract_dir)
+    except:
+        continue
     
 
     # config.yaml
