@@ -34,21 +34,22 @@ python llm_plan_bench/models/prompt_generation/plan_solver_prompt.py
 LLM Plan generation 
 for model_path currently just use llama (/ssd1/kevin/huggingface/Llama-3.1-8B-Instruct)
 ```bash
-python generate_plans.py \ 
---input ./data/inputs/solve_plan/blocksworld.json \ 
---output experiments/<output folder name> \ 
+python generate_plans.py \
+--input ./data/inputs/solve_plan/blocksworld.json \
+--output experiments/<output folder name> \
 --model_path <>
 ```
 Classical planner generation (currently only support fast downward)
 ```bash
-python classic_planner.py \ --input ./data/pddl \ 
+python classic_planner.py \ --input ./data/pddl \
 --output experiments/<output folder name>
 ```
 Validator 
+The solution path should be the path to the pddl format solution
 ```bash
-python validate_plans.py \ 
---data_path ./data/pddl \ 
---solutions_path ./experiments/<output folder name>
+python validate_plans.py \
+--data_path ./data/pddl \
+--solutions_path ./experiments/<output folder name>/pddl 
 --domain <Specific domain to validate (empty for all domains)>
 ```
 
