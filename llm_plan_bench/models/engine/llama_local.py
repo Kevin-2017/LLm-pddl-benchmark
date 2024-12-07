@@ -72,7 +72,7 @@ class ChatLocalLLM(EngineLM, CachedEngine):
         history,
         system_prompt: str = None,
         temperature: float = 0.95,
-        max_tokens: int = 1024,
+        max_tokens: int = 4096,
         top_p: float = 0.95,
     ) -> str:
         # data format:

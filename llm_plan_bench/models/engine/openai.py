@@ -51,7 +51,6 @@ class ChatOpenAI(EngineLM, CachedEngine):
             if os.getenv("OPENAI_API_KEY") is None:
                 print("no openai key provided")
                 # raise ValueError("Please set the OPENAI_API_KEY environment variable if you'd like to use OpenAI models.")
-
             # try:
             self.client = OpenAI(
                 api_key=os.getenv("OPENAI_API_KEY")
@@ -183,7 +182,7 @@ class ChatOpenAI(EngineLM, CachedEngine):
         return response_text
 
     def _generate_from_history(
-            self, history, system_prompt=None, temperature=0.95, max_tokens=2000, top_p=0.99
+            self, history, system_prompt=None, temperature=0.95, max_tokens=4096, top_p=0.99
     ):
         sys_prompt_arg = system_prompt if system_prompt else self.system_prompt
         ic(self.model_string)

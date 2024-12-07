@@ -1,4 +1,5 @@
 import requests
+from tqdm import tqdm
 import json
 import sys
 import os
@@ -6,8 +7,8 @@ import copy
 import time
 sys.path.append(os.path.abspath(".."))
 import llm_plan_bench as lpb
-model_name = "o1-preview-2024-09-12"
-# model_name = "o1-mini-2024-09-12"
+# model_name = "o1-preview-2024-09-12"
+model_name = "gpt-4o-mini"
 lang = "py.py3"
 max_trial_times = 5
 model = lpb.BlackboxLLM(model_name)
@@ -130,9 +131,16 @@ def parse_feedback_text(rdoc):
 
 total_score = 0
 
-problem_range = [103, 113]
+problem_range = [3389, 4000]
+# problem_range = [3389, 6443]
+# problem_range = [103, 113]
 # for problem_id in range(102, 182):
-for problem_id in range(problem_range[0], problem_range[1]):
+for problem_id in tqdm(range(problem_range[0], problem_range[1])):
+	filename = f"test_result/problem-{problem_id}-messages-{model_name}-{lang}.json"
+	if os.path.exists(filename):
+		print("Skip problem", problem_id)
+		total_score += json.load(open(filename,"r"))["score"]
+		continue
 	fetch_url = f"{web_ip}/p/{problem_id}"
 	headers = {
 	"Accept": "application/json"
@@ -145,11 +153,12 @@ for problem_id in range(problem_range[0], problem_range[1]):
 			exit()
 		problem = fetch_response.json()
 		problem_text = parse_problem_text(problem["pdoc"])
-		json.dump(problem, open(f"problem-{problem_id}.json", "w"), ensure_ascii=False, indent=4)
+		json.dump(problem, open(f"problems/problem-{problem_id}.json", "w"), ensure_ascii=False, indent=4)
 	except Exception as e:
 		print("Fetch problem failed:", e)
 		continue
-	print(problem_text)
+	time.sleep(0.5)
+	# print(problem_text)
 	sleep_time = problem["pdoc"]["config"]["timeMax"] * (len(problem["pdoc"]["data"]) / 2) / 1000
 	messages = [
 		{
@@ -164,6 +173,7 @@ for problem_id in range(problem_range[0], problem_range[1]):
 	append_assistant_message(messages, copy.deepcopy(messages), content)
 	append_user_message(messages, copy.deepcopy(messages), f"""Now please generate the finalized code solution for this problem. I will upload the code to the online judge and then give you the feedback. Please format your response in a json file. The output must be in json format. The first key should be 'lang' (compiler specified above in config), and the second key should be 'code'. The value should all be string. Please use the programming language lang = {lang}. Thank you very much! You should generate a whole and complete program that can be compiled and run directly in code. Please generate the correct json format: {{"lang": "your lang", "code": "your code"}}, and all the characters in the json should be json valid characters.""")
 	this_score = 0
+	score_list = []
 	for trial_times in range(max_trial_times):
 		while True:
 			content = model(messages)
@@ -227,6 +237,7 @@ for problem_id in range(problem_range[0], problem_range[1]):
 			print("Failed to retrieve result:", response.status_code)
 		feedback_text = parse_feedback_text(result["rdoc"])
 		this_score = max(this_score, result["rdoc"]["score"])
+		score_list.append(result["rdoc"]["score"])
 		if result["rdoc"]["score"] == 100:
 			print("Passed")
 			break
@@ -240,10 +251,13 @@ for problem_id in range(problem_range[0], problem_range[1]):
 		"problem_id": problem_id,
 		"model_name": model_name,
 		"trial_times": trial_times+1,
-		"scores": this_score,
+		"score_list": score_list,
+		"score": this_score,
 		"lang": lang,
+		"problem_url": fetch_url,
+		"problem_text": problem_text,
 		"messages": messages,
-	}, open(f"problem-{problem_id}-messages-{model_name}-{lang}.json", "w"), ensure_ascii=False, indent=4)
+	}, open(f"test_result/p{problem_id}-{model_name}-{lang}.json", "w"), ensure_ascii=False, indent=4)
 	total_score += this_score
 
 print("Finish all problems")
@@ -253,5 +267,6 @@ json.dump({
 	"model_name": model_name,
 	"total_score": total_score,
 	"problem_range": problem_range,
+	"avg_score": total_score / (problem_range[1] - problem_range[0]),
 	"lang": lang,
-}, open(f"total-score-{model_name}-{lang}.json", "w"), ensure_ascii=False, indent=4)
+}, open(f"summary_result/total-score-{model_name}-{lang}.json", "w"), ensure_ascii=False, indent=4)
