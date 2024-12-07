@@ -52,6 +52,46 @@ def get_initial_state(problem_path):
         print(f"Unexpected error: {e}")
         return {"predicates": []}
 
+# def get_initial_state(problem_path):
+#     try:
+#         with open(problem_path, 'r', encoding='utf-8') as file:
+#             content = file.read()
+        
+#         init_block = extract_init_content(content)
+#         if not init_block:
+#             print("No :init section found or unmatched parentheses.")
+#             return {"predicates_state": set(), "functions_state": {}}
+        
+#         init_content = init_block[len('(:init'): -1].strip()
+#         predicates = [line.strip() for line in init_content.split('\n') if line.strip()]
+
+#         predicates_state = set()
+#         functions_state = {}
+
+#         for predicate in predicates:
+#             # Check for numeric function assignment (e.g., (= (total-cost) 0))
+#             if predicate.startswith("(="):
+#                 try:
+#                     function_part = predicate[len("(="):].strip()[:-1].strip()  # Strip `(= ` and closing `)`
+#                     function, value = function_part.split()  # Split into function name and value
+#                     function_name = function[1:-1]  # Remove surrounding parentheses
+#                     functions_state[function_name] = float(value)
+#                 except ValueError:
+#                     print(f"Failed to parse function from predicate: {predicate}")
+#             else:
+#                 # Add normal predicates to the state
+#                 predicates_state.add(predicate)
+
+#         return {"predicates_state": predicates_state, "functions_state": functions_state}
+
+#     except FileNotFoundError:
+#         print(f"Problem file not found: {problem_path}")
+#         return {"predicates_state": set(), "functions_state": {}}
+#     except Exception as e:
+#         print(f"Unexpected error: {e}")
+#         return {"predicates_state": set(), "functions_state": {}}
+
+
 def generate_plan_with_first_two_actions(solution_path, output_plan_path):
     with open(solution_path, 'r', encoding='utf-8') as file:
         actions = file.readlines()
@@ -221,7 +261,7 @@ def main():
     solution_path = 'solution-barman-sequential-optimal.pddl'
 
     #model_path = "/ssd1/kevin/huggingface/Llama-3.1-8B-Instruct"
-    model_path = 'gpt-4o'
+    model_path = 'gpt-4'
     
     if not os.path.exists(domain_path):
         print(f"Domain file not found: {domain_path}")
