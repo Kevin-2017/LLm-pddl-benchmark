@@ -41,7 +41,7 @@ def generate_action_prompt(legal_moves):
 
 	{board_index}
 
-	Now it's your move. Please enter the index of the cell where you would like to place your stone [x, y] 0 <= x,y <= {board_size-1}, you should enter two numbers between 0 and {board_size-1} based on the cell index shown above. Note that x represents rows and y represents columns. You can't put a stone where there is a stone already at that place. If there is no place you can put the stone or you want to skip your round, please enter ({board_size}, {board_size}) to pass. You should serialize the output to a json object with the key "reason" and the value string as the detailed reasoning or planning for your action, and the key "action" and the value as a tuple (length of two) where you would like to place your mark. Your output should be in this format: {{'reason': string, 'action': [x, y]}}, and you can only use json valid characters.
+	Now it's your move. Please enter the index of the cell where you would like to place your stone [x, y] 0 <= x,y <= {board_size-1}, you should enter two numbers between 0 and {board_size-1} based on the cell index shown above. Note that x represents rows and y represents columns. You can't put a stone where there is a stone already at that place. If there is no place you can put the stone or you want to skip your round, please enter ({board_size}, {board_size}) to pass. You should serialize the output to a json object with the key "reason" and the value string as the detailed reason for your action, and the key "action" and the value as a tuple (length of two) where you would like to place your mark. Your output should be in this format: {{"reason": string, "action": [x, y]}}, and you can only use json valid characters.
 	"""
 	return action_prompt
 

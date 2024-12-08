@@ -18,7 +18,7 @@ from play_service import (
 
 def generate_action_prompt(legal_moves):
 	action_prompt = f"""
-Now it's your move. Please enter the index of the column where you would like to place your token (0-6 from left to right), except the illegal position. You should serialize the output to a json object with the key "reason" and the value str as the detailed reasoning or planning for your action, and the key "action" and the value as the index of the column where you would like to place your token. The legal moves are: \n<legal_moves>\n{" ".join([str(move) for move in legal_moves])}\n</legal_moves>\n You must select one legal move from this list. You have to win.  Your output should be {{'reason': string, 'action': index}}, and you can only use json valid characters.
+Now it's your move. Please enter the index of the column where you would like to place your token (0-6 from left to right), except the illegal position. You should serialize the output to a json object with the key "reason" and the value str as the detailed reason for your action, and the key "action" and the value as the index of the column where you would like to place your token. The legal moves are: \n<legal_moves>\n{" ".join([str(move) for move in legal_moves])}\n</legal_moves>\n You must select one legal move from this list. You have to win.  Your output should be {{"reason": "your reason", "action": "action index"}}, and you can only use json valid characters.  In the json's value, if you want to use \\n, please use \\\\n, and not \\n inside the \"\".
 """
 	return action_prompt
 
@@ -116,7 +116,7 @@ def gen_move(player_messages, player_model):
 		reason = None
 	return move, content, used_token, action, reason
 
-player_list_json = json.load(open("player-list-cf-continue.json","r"))
+player_list_json = json.load(open("o1-player-list.json","r"))
 player1_model_list = player_list_json["player1_model_list"]
 player2_model_list = player_list_json["player2_model_list"]
 
@@ -150,9 +150,14 @@ for model_index in range(len(player1_model_list)):
 		print(player1_model_save_name, player2_model_save_name)
 		filename = f"cf_archive/cf_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json"
 		if os.path.exists(filename):
-			print("File exists", filename)
-			time.sleep(1)
-			continue
+			old_status = json.load(open(filename, "r"))["status"]
+			if "illegal move!" in old_status:
+				print("File exists, but illegal move, continue", filename)
+				pass
+			else:
+				print("File exists", filename)
+				time.sleep(1)
+				continue
 
 		first_player_initial_prompt = """
 		You are playing a game of Connect Four against an opponent. Connect Four is a 2-player turn based game, where players must connect four of their tokens vertically, horizontally or diagonally. The players drop their respective token in a column of a standing grid, where each token will fall until it reaches the bottom of the column or reaches an existing token. Players cannot place a token in a full column, and the game ends when either a player has made a sequence of 4 tokens, or when all 7 columns have been filled. Taking an illegal move ends the game and the player who made the illegal move loses.
