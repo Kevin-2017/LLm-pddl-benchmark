@@ -52,54 +52,15 @@ def get_initial_state(problem_path):
         print(f"Unexpected error: {e}")
         return {"predicates": []}
 
-# def get_initial_state(problem_path):
-#     try:
-#         with open(problem_path, 'r', encoding='utf-8') as file:
-#             content = file.read()
-        
-#         init_block = extract_init_content(content)
-#         if not init_block:
-#             print("No :init section found or unmatched parentheses.")
-#             return {"predicates_state": set(), "functions_state": {}}
-        
-#         init_content = init_block[len('(:init'): -1].strip()
-#         predicates = [line.strip() for line in init_content.split('\n') if line.strip()]
 
-#         predicates_state = set()
-#         functions_state = {}
-
-#         for predicate in predicates:
-#             # Check for numeric function assignment (e.g., (= (total-cost) 0))
-#             if predicate.startswith("(="):
-#                 try:
-#                     function_part = predicate[len("(="):].strip()[:-1].strip()  # Strip `(= ` and closing `)`
-#                     function, value = function_part.split()  # Split into function name and value
-#                     function_name = function[1:-1]  # Remove surrounding parentheses
-#                     functions_state[function_name] = float(value)
-#                 except ValueError:
-#                     print(f"Failed to parse function from predicate: {predicate}")
-#             else:
-#                 # Add normal predicates to the state
-#                 predicates_state.add(predicate)
-
-#         return {"predicates_state": predicates_state, "functions_state": functions_state}
-
-#     except FileNotFoundError:
-#         print(f"Problem file not found: {problem_path}")
-#         return {"predicates_state": set(), "functions_state": {}}
-#     except Exception as e:
-#         print(f"Unexpected error: {e}")
-#         return {"predicates_state": set(), "functions_state": {}}
-
-
-def generate_plan_with_first_two_actions(solution_path, output_plan_path):
+def generate_plan_with_user_actions(solution_path, output_plan_path, num_actions):
     with open(solution_path, 'r', encoding='utf-8') as file:
         actions = file.readlines()
-    first_two_actions = [action.strip() for action in actions[:2] if action.strip()]
+    selected_actions = [action.strip() for action in actions[:num_actions] if action.strip()]
     with open(output_plan_path, 'w', encoding='utf-8') as plan_file:
-        for action in first_two_actions:
+        for action in selected_actions:
             plan_file.write(action + "\n")
-    return first_two_actions
+    return selected_actions
 
 # Function to get states after actions
 def get_states_after_actions(domain_path, problem_path, plan_file_path):
@@ -159,40 +120,21 @@ def call_llm_with_json_input(input_json_path, model, output_file):
     except Exception as e:
         print(f"Error during LLM call: {e}")
 
-# Main function to generate JSON and call the LLM
-# def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_path):
-#     # Prepare input data for the LLM
-#     pddl_domain = read_pddl_domain(domain_path)
-#     initial_state = get_initial_state(problem_path)
-#     first_two_actions = generate_plan_with_first_two_actions(solution_path, 'temp_plan_file.plan')
-#     states_after_actions = get_states_after_actions(domain_path, problem_path, 'temp_plan_file.plan')
-    
-#     # 将数据存储到初始 JSON 文件
-#     input_data = {
-#         "prompt": "We are solving problems in PDDL format. Based on the PDDL domain, what will be the states after each action? Directly generate your answer without any explanation and in txt format like this: \n(empty shot4)\n(handempty left)\n(handempty right)",
-#         "pddl_domain": pddl_domain.split('\n'),
-#         "initial_state": initial_state,
-#         "action_sequence": first_two_actions,
-#         "states_after_actions": states_after_actions  # 模型生成前的状态
-#     }
-    
-#     with open('input.json', 'w', encoding='utf-8') as f:
-#         json.dump(input_data, f, ensure_ascii=False, indent=4)
-#     print("Input JSON saved as input.json")
-    
-#     # Initialize the LLM model
-#     model = lpb.BlackboxLLM(model_path, device='cuda:6')
-#     # model = lpb.BlackboxLLM(model_path, device='cuda:7', attn_implementation="flash_attention_2")
-
-    
-#     # 调用 LLM 模型，并将结果保存到新的 JSON 文件
-#     call_llm_with_json_input('input.json', model, 'llm_output.json')
 
 def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_path):
+    # User inputs the number of actions
+    while True:
+        try:
+            num_actions = int(input("Enter the number of actions you want to generate the plan: "))
+            if num_actions <= 0:
+                raise ValueError("Number of actions must be a positive integer.")
+            break
+        except ValueError as e:
+            print(f"Invalid input: {e}. Please try again.")
     # Prepare input data for the LLM
     pddl_domain = read_pddl_domain(domain_path)
     initial_state = get_initial_state(problem_path)
-    first_two_actions = generate_plan_with_first_two_actions(solution_path, 'temp_plan_file.plan')
+    first_actions = generate_plan_with_user_actions(solution_path, 'temp_plan_file.plan', num_actions)
     states_after_actions = get_states_after_actions(domain_path, problem_path, 'temp_plan_file.plan')
     
     # Store data in the input JSON file
@@ -234,7 +176,7 @@ def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_p
         ),
         "pddl_domain": pddl_domain.split('\n'),
         "initial_state": initial_state,
-        "action_sequence": first_two_actions,
+        "action_sequence": first_actions,
         "states_after_actions": states_after_actions
     }
     
@@ -250,12 +192,6 @@ def generate_json_and_call_llm(domain_path, problem_path, solution_path, model_p
 
 
 def main():
-    #domain_path = '/ssd1/haisu/project/LLm-pddl-benchmark/final_state_test_version/domain-elevator-strips-simple-typed.pddl'
-    #problem_path = '/ssd1/haisu/project/LLm-pddl-benchmark/final_state_test_version/instance-10-elevator-strips-simple-typed.pddl'
-    #solution_path = '/ssd1/haisu/project/LLm-pddl-benchmark/final_state_test_version/solution-10-elevator-strips-simple-typed.pddl'
-
-
-
     domain_path = 'domain-barman-sequencial-optimal.pddl'
     problem_path = 'instance-1-barman-sequential-optimal.pddl'
     solution_path = 'solution-barman-sequential-optimal.pddl'
