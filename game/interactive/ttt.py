@@ -14,6 +14,10 @@ from play_service import (
 )
 # Regex pattern for recursive matching
 json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}', regex.DOTALL)
+import argparse
+parser = argparse.ArgumentParser(description="Set model name for player1_model")
+parser.add_argument('--model', type=str, required=True, help="Specify the model name (e.g., gpt-4o)")
+args = parser.parse_args()
 
 def generate_action_prompt(legal_moves):
 	action_prompt = """
@@ -108,7 +112,7 @@ def gen_move(player_messages, player_model):
 	return move, content, used_token, action, reason
 
 player1_model = {
-			"model": "gpt-4o",
+			"model": args.model,
 			"prompt_config": [
 				{
 					"name": "forced-reasoning",
@@ -246,6 +250,7 @@ for game_index in range(10):
 			if agent == 'player_1':
 				# first_player
 				if player1_model_name == "human":
+					print(board_state + "\n" + generate_action_prompt(legal_moves))
 					action = int(input("You are playing as 'X', Enter your move: "))
 				else:
 					first_player_messages = first_player_messages[:2]
@@ -255,6 +260,7 @@ for game_index in range(10):
 			elif agent == 'player_2':
 				# second_player
 				if player2_model_name == "human":
+					print(board_state + "\n" + generate_action_prompt(legal_moves))
 					action = int(input("You are playing as 'O', Enter your move: "))
 				else:
 					second_player_messages = second_player_messages[:2]

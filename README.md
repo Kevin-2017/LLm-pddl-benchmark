@@ -56,6 +56,20 @@ python validate_plans.py \
 ### data
 currently all the data is in the data folder, but this would change later when we scaled up. 
 
+### Game
+
+in folder: game/interactive
+
+run ttt.py (Tic Tac Toe), cf.py (Connect Four), chess_simplify.py (Chess), play against models (10 rounds in total)
+
+Examples:
+
+```bash
+python ttt.py --model gpt-4o-mini
+python cf.py --model gpt-4o
+python chess_simplify.py --model o1-preview
+```
+
 ### Acknowledgement 
 The pddl data is from https://github.com/ipc2023-numeric/ipc2023-dataset/ 
 

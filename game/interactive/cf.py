@@ -17,6 +17,10 @@ from play_service import (
 	play,
 	create_hook_functions,
 )
+import argparse
+parser = argparse.ArgumentParser(description="Set model name for player1_model")
+parser.add_argument('--model', type=str, required=True, help="Specify the model name (e.g., gpt-4o)")
+args = parser.parse_args()
 
 def generate_action_prompt(legal_moves):
 	action_prompt = f"""
@@ -119,7 +123,7 @@ def gen_move(player_messages, player_model):
 		reason = None
 	return move, content, used_token, action, reason
 player1_model = {
-			"model": "gpt-4o-mini",
+			"model": args.model,
 			"prompt_config": [
 				{
 					"name": "forced-reasoning",
@@ -247,6 +251,7 @@ for game_index in range(10):
 		else:
 			if agent == 'player_0':
 				if player1_model_name == "human":
+					print(grid_description + "\n" + generate_action_prompt(legal_moves))
 					move = int(input("You are playing as 'X', Enter your move: "))
 				else:
 					first_player_messages = first_player_messages[:2]
@@ -255,6 +260,7 @@ for game_index in range(10):
 					total_tokens += added_tokens
 			elif agent == 'player_1':
 				if player2_model_name == "human":
+					print(grid_description + "\n" + generate_action_prompt(legal_moves))
 					move = int(input("You are playing as 'O', Enter your move: "))
 				else:
 					second_player_messages = second_player_messages[:2]

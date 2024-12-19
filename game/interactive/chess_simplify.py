@@ -18,6 +18,11 @@ from play_service import (
 	play,
 	create_hook_functions,
 )
+import argparse
+parser = argparse.ArgumentParser(description="Set model name for player1_model")
+parser.add_argument('--model', type=str, required=True, help="Specify the model name (e.g., gpt-4o)")
+args = parser.parse_args()
+
 
 
 def transform_to_uci(board, s):
@@ -117,14 +122,14 @@ def gen_move(player_messages, player_model,board=None,legal_move_list=None):
 
 
 player1_model = {
-			"model": "gpt-4o",
+			"model": args.model,
 			"prompt_config": [
 				{
 					"name": "forced-reasoning",
 					"params": {
 						"interactive_times": 1,
 						"prompt_messages": [
-							"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage."
+							"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to reason now, no need to make move at this stage."
 						]
 					}
 				}
@@ -138,7 +143,7 @@ player2_model = {
 					"params": {
 						"interactive_times": 1,
 						"prompt_messages": [
-							"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to plan and reason now, no need to make move at this stage."
+							"Please reason about the current state. You should analyze all the opponent's moves and your moves, try to reason opponent's thought in detail. Only need to reason now, no need to make move at this stage."
 						]
 					}
 				}
