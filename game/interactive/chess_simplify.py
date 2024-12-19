@@ -150,9 +150,9 @@ player2_model = {
 			]
 		}
 
-for game_index in range(10):
+for game_index in range(4):
 	try:
-		if game_index > 5:
+		if game_index > 2:
 			player1_model, player2_model = player2_model, player1_model
 		player1_model_name = player1_model["model"]
 		player2_model_name = player2_model["model"]
