@@ -1,5 +1,6 @@
 import json
 from chat_service import get_chat
+import copy
 
 # player1_model_list = [
 # 	{
@@ -39,10 +40,13 @@ def play(player_messages, player_store_message, player_model, player_reasoning_a
     if "legal_move_list" in kwargs.keys():
         legal_move_list = kwargs["legal_move_list"]
     else:
-        legal_move_list = legal_moves
+        legal_move_list = copy.deepcopy(legal_moves)
+    for i in range(len(legal_move_list)):
+        legal_move_list[i] = str(legal_move_list[i])
     for k in hook_functions:
         k(player_messages, player_store_message, player_model, **hook_functions[k])
     move, content, used_token, action, reason = gen_move(player_messages, player_model, **kwargs)
+    print(move, legal_moves)
     added_tokens += used_token
     while illegal_tolerance > 0 and (move not in legal_moves or move == None):
         print(content)

@@ -105,7 +105,7 @@ def gen_move(player_messages, player_model):
 		reason = None
 	return move, content, used_token, action, reason
 
-player_list_json = json.load(open("o1-player-list.json","r"))
+player_list_json = json.load(open("player-list.json","r"))
 player1_model_list = player_list_json["player1_model_list"]
 player2_model_list = player_list_json["player2_model_list"]
 
