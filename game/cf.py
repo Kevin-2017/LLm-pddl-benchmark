@@ -10,7 +10,7 @@ import json
 from pettingzoo.classic import connect_four_v3
 import random
 import time
-from chat_service import get_chat
+from chat_service import get_chat,fix_json
 from play_service import (
 	play,
 	create_hook_functions,
@@ -18,7 +18,7 @@ from play_service import (
 
 def generate_action_prompt(legal_moves):
 	action_prompt = f"""
-Now it's your move. Please enter the index of the column where you would like to place your token (0-6 from left to right), except the illegal position. You should serialize the output to a json object with the key "reason" and the value str as the detailed reason for your action, and the key "action" and the value as the index of the column where you would like to place your token. The legal moves are: \n<legal_moves>\n{" ".join([str(move) for move in legal_moves])}\n</legal_moves>\n You must select one legal move from this list. You have to win.  Your output should be {{"reason": "your reason", "action": "action index"}}, and you can only use json valid characters.  In the json's value, if you want to use \\n, please use \\\\n, and not \\n inside the \"\".
+Now it's your move. Please enter the index of the column where you would like to place your token (0-6 from left to right), except the illegal position. You should serialize the output to a json object with the key "reason" and the value str as the detailed reason for your action, and the key "action" and the value as the index of the column where you would like to place your token. The legal moves are: \n<legal_moves>\n{" ".join([str(move) for move in legal_moves])}\n</legal_moves>\n You must select one legal move from this list. You have to win.  Your output should be {{"reason": "your reason", "action": "action index"}}, and you can only use json valid characters. When you write json, all the elements (including all the keys and values) should be enclosed in double quotes!!!
 """
 	return action_prompt
 
@@ -106,7 +106,8 @@ def gen_move(player_messages, player_model):
 				print("Valid JSON Found:", parsed_json)
 			except Exception as e:
 				print("Invalid JSON Found:", match)
-		action = parsed_json["action"]
+				parsed_json = json.loads(fix_json(match))
+		action = int(parsed_json["action"])
 		reason = parsed_json["reason"]
 		move = action
 	except Exception as e:
@@ -149,14 +150,28 @@ for model_index in range(len(player1_model_list)):
 		player2_model_save_name = player2_model_save_name.replace("/", "_")
 		print(player1_model_save_name, player2_model_save_name)
 		filename = f"cf_archive/cf_{game_index}_{player1_model_save_name}_{player2_model_save_name}.json"
-		if os.path.exists(filename):
-			old_status = json.load(open(filename, "r"))["status"]
+		reverse_filename = f"cf_archive/cf_{game_index}_{player2_model_save_name}_{player1_model_save_name}.json"
+		if os.path.exists(filename) or os.path.exists(reverse_filename):
+			try:
+				old_status = json.load(open(filename, "r"))["status"]
+			except:
+				old_status = json.load(open(reverse_filename, "r"))["status"]
 			if "illegal move!" in old_status:
 				print("File exists, but illegal move, continue", filename)
+				if "gpt" in player1_model_name and "gpt" in player2_model_name:
+					print("gpt vs gpt")
+					continue
+				elif "gpt" in player1_model_name and "o1" in player2_model_name:
+					print("gpt vs o1")
+					continue
+				elif "o1" in player1_model_name and "gpt" in player2_model_name:
+					print("o1 vs gpt")
+					continue
+				print("re-test the game")
 				pass
 			else:
 				print("File exists", filename)
-				time.sleep(1)
+				# time.sleep(2)
 				continue
 
 		first_player_initial_prompt = """

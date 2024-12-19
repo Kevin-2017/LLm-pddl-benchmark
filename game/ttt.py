@@ -5,7 +5,7 @@ import os
 import re
 import json
 import regex
-from chat_service import get_chat
+from chat_service import get_chat, fix_json
 from play_service import (
 	play,
 	create_hook_functions,
@@ -25,7 +25,7 @@ def generate_action_prompt(legal_moves):
 	2 | 5 | 8
 
 	Now it's your move. Please enter the index of the cell where you would like to place your mark (0-8), you should enter a number between 0 and 8 based on the cell index shown above. You should serialize the output to a json object with the key "reason" and the value string as the detailed reason for your action, and the key "action" and the value as the index of the cell where you would like to place your mark.
-	Your output should be in this format: {"reason": string, "action": int}, and you can only use json valid characters. In the json's value, if you want to use \\n, please use \\\\n, and not \\n inside the \"\".
+	Your output should be in this format: {"reason": string, "action": int}, and you can only use json valid characters. When you write json, all the elements (including all the keys and values) should be enclosed in double quotes!!!
 	"""
 	return action_prompt + f"\nLegal moves: {legal_moves} You must select one legal move from this list. You have to win.\n"
 
@@ -94,6 +94,7 @@ def gen_move(player_messages, player_model):
 				print("Valid JSON Found:", parsed_json)
 			except Exception as e:
 				print("Invalid JSON Found:", match)
+				parsed_json = json.loads(match)
 		action = int(parsed_json["action"])
 		reason = parsed_json["reason"]
 		move = action
@@ -144,7 +145,7 @@ for model_index in range(len(player1_model_list)):
 					pass
 				else:
 					print("File exists", filename)
-					time.sleep(1)
+					# time.sleep(1)
 					continue
 
 			first_player_initial_prompt = """

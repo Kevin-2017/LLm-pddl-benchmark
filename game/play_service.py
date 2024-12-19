@@ -31,22 +31,30 @@ from chat_service import get_chat
 # 	}
 # ]
 
-def play(player_messages, player_store_message, player_model, player_reasoning_action_steps, state_description, legal_move_description, legal_moves, gen_move=None, illegal_tolerance=10,print_content=True, hook_functions=None,player_index=None):
+def play(player_messages, player_store_message, player_model, player_reasoning_action_steps, state_description, legal_move_description, legal_moves, gen_move=None, illegal_tolerance=10,print_content=True, hook_functions=None,player_index=None, **kwargs):
     # in hook_functions, key is the function, and the value is the additional arguments
     win = None
     game_state = None
     added_tokens = 0
+    if "legal_move_list" in kwargs.keys():
+        legal_move_list = kwargs["legal_move_list"]
+    else:
+        legal_move_list = legal_moves
     for k in hook_functions:
         k(player_messages, player_store_message, player_model, **hook_functions[k])
-    move, content, used_token, action, reason = gen_move(player_messages, player_model)
+    move, content, used_token, action, reason = gen_move(player_messages, player_model, **kwargs)
     added_tokens += used_token
     while illegal_tolerance > 0 and (move not in legal_moves or move == None):
         print(content)
         print("Illegal move for player", player_model, "try again")
         illegal_tolerance -= 1
+        player_messages.extend([
+            {"role": "assistant", "content": content},
+            {"role": "user", "content": "Illegal move, try again, your legal moves are: " + " ".join(legal_move_list)}
+        ])
         player_store_message.extend([
             {"role": "assistant", "content": content},
-            {"role": "user", "content": "Illegal move, try again"}
+            {"role": "user", "content": "Illegal move, try again, your legal moves are: " + " ".join(legal_move_list)}
         ])
         move, content, used_token, action, reason = gen_move(player_messages, player_model)
         added_tokens += used_token
@@ -185,8 +193,6 @@ def create_hook_functions(model, player_reasoning_action_steps, state_descriptio
     if "prompting-code" in prompt_dict.keys():
         hook_functions[prompting_code] = { "interactive_times": prompt_dict["prompting-code"]["interactive_times"], "prompt_messages": prompt_dict["prompting-code"]["prompt_messages"] }
 
-    # necessary
-    hook_functions[add_state_description] = { "state_description": state_description }
     # necessary
     hook_functions[action_prompt] = { "action_prompt": action_prompt_text }
 
